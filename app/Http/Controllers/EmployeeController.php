@@ -13,7 +13,9 @@ class EmployeeController extends Controller
             $user = $request->user();
 
             if (! $user || (! method_exists($user, 'hasPrivilege') && ! method_exists($user, 'hasAnyRole'))) {
-                // If the user model doesn't have Tyro role/privilege methods, deny access by default
+            
+            
+
                 abort(403);
             }
 
