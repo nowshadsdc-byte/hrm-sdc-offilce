@@ -91,6 +91,52 @@
                     </a>
                 @endforeach
             @endif
+
+            @if(!empty($adminMenuItems))
+                @foreach($adminMenuItems as $item)
+                    @php
+                        $menuUser = auth()->user();
+                        $menuRoles = $item['roles'] ?? [];
+                        $menuPrivileges = $item['privileges'] ?? [];
+                        $requiresAny = ($item['visibility'] ?? 'all') === 'any';
+                        $hasMenuRole = false;
+                        $hasMenuPrivilege = false;
+
+                        foreach ($menuRoles as $role) {
+                            if ($menuUser && method_exists($menuUser, 'hasRole') && $menuUser->hasRole($role)) {
+                                $hasMenuRole = true;
+                                break;
+                            }
+                        }
+
+                        foreach ($menuPrivileges as $privilege) {
+                            if ($menuUser && method_exists($menuUser, 'hasPrivilege') && $menuUser->hasPrivilege($privilege)) {
+                                $hasMenuPrivilege = true;
+                                break;
+                            }
+                        }
+
+                        $canSeeMenuItem = (! empty($menuRoles) || ! empty($menuPrivileges)) && (
+                            $requiresAny
+                                ? ($hasMenuRole || $hasMenuPrivilege)
+                                : ($hasMenuRole && $hasMenuPrivilege)
+                        );
+                    @endphp
+
+                    @if($canSeeMenuItem)
+                    <a href="{{ $item['url'] ?? route($item['route'] ?? '#') }}" class="sidebar-link {{ request()->routeIs($item['route'] ?? '') ? 'active' : '' }}">
+                        @if(isset($item['icon']))
+                            {!! $item['icon'] !!}
+                        @else
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        @endif
+                        {{ $item['title'] ?? 'Menu Item' }}
+                    </a>
+                    @endif
+                @endforeach
+            @endif
         </div>
 
         <!-- Media -->

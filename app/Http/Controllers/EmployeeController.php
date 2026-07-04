@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
@@ -13,19 +14,17 @@ class EmployeeController extends Controller
             $user = $request->user();
 
             if (! $user || (! method_exists($user, 'hasPrivilege') && ! method_exists($user, 'hasAnyRole'))) {
-            
-            
-
                 abort(403);
             }
 
-            if (! $user->hasPrivilege('employees.access') && ! $user->hasAnyRole(['admin', 'super-admin','employee'])) {
+            if (! $user->hasPrivilege('employees.access') && ! $user->hasAnyRole(['admin', 'super-admin', 'employee'])) {
                 abort(403);
             }
 
             return $next($request);
         });
     }
+
     public function index(Request $request)
     {
         $query = Employee::query();
@@ -40,14 +39,34 @@ class EmployeeController extends Controller
             });
         }
 
-        $employees = $query->orderByDesc('created_at')->paginate(15)->withQueryString();
+        if ($department = $request->query('department')) {
+            $query->where('department', $department);
+        }
 
-        return view('employees.index', compact('employees'));
+        if ($status = $request->query('status')) {
+            $query->where('status', $status);
+        }
+
+        if ($role = $request->query('role')) {
+            $query->whereHas('user', function ($q) use ($role) {
+                $q->whereHas('roles', function ($q) use ($role) {
+                    $q->where('name', $role);
+                });
+            });
+        }
+
+        $employees = $query->with(['user.roles', 'attendances.device'])->orderByDesc('created_at')->paginate(36)->withQueryString();
+
+        $users = User::query()->orderBy('name', 'asc')->get();
+
+        return view('employees.index', compact('employees', 'users'));
     }
 
     public function create()
     {
-        return view('employees.create');
+        $users = User::query()->orderBy('name', 'asc')->get();
+
+        return view('employees.create', compact('users'));
     }
 
     public function store(Request $request)
@@ -67,7 +86,9 @@ class EmployeeController extends Controller
 
     public function edit(Employee $employee)
     {
-        return view('employees.edit', compact('employee'));
+        $users = User::query()->orderBy('name', 'asc')->get();
+
+        return view('employees.edit', compact('employee', 'users'));
     }
 
     public function update(Request $request, Employee $employee)
@@ -82,7 +103,7 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee)
     {
-        $employee->delete();
+        Employee::destroy($employee->getKey());
 
         return redirect()->route('employees.index')->with('success', 'Employee deleted successfully.');
     }
@@ -90,6 +111,7 @@ class EmployeeController extends Controller
     protected function validateEmployee(Request $request): array
     {
         return $request->validate([
+            'user_id' => ['nullable', 'exists:users,id'],
             'name' => ['required', 'string', 'max:255'],
             'nid' => ['nullable', 'string', 'max:255'],
             'dob' => ['nullable', 'date'],

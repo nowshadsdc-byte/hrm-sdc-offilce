@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'device_gateway' => [
+        'url' => env('DEVICE_GATEWAY_URL', 'http://localhost:4370'),
+    ],
+
 ];

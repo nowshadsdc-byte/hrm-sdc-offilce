@@ -2,10 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\Attendance;
+use App\Policies\AttendancePolicy;
 use Carbon\CarbonImmutable;
 use HasinHayder\TyroDashboard\Support\DashboardRoute;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -25,6 +28,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Attendance::class, AttendancePolicy::class);
+
         $this->configureDefaults();
 
         if (class_exists(DashboardRoute::class)) {

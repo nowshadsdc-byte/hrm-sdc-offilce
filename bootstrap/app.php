@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnsureAttendanceSettingsAccess;
+use App\Http\Middleware\EnsureHolidayCalendarAccess;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -18,6 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+        ]);
+
+        $middleware->alias([
+            'attendance-settings.access' => EnsureAttendanceSettingsAccess::class,
+            'holiday-calendar.access' => EnsureHolidayCalendarAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
