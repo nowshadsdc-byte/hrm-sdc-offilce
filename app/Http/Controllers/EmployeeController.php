@@ -48,10 +48,13 @@ class EmployeeController extends Controller
         }
 
         if ($role = $request->query('role')) {
-            $query->whereHas('user', function ($q) use ($role) {
-                $q->whereHas('roles', function ($q) use ($role) {
-                    $q->where('name', $role);
-                });
+            $query->where(function ($q) use ($role) {
+                $q->where('role', $role)
+                    ->orWhereHas('user', function ($q) use ($role) {
+                        $q->whereHas('roles', function ($q) use ($role) {
+                            $q->where('name', $role);
+                        });
+                    });
             });
         }
 
@@ -113,6 +116,8 @@ class EmployeeController extends Controller
         return $request->validate([
             'user_id' => ['nullable', 'exists:users,id'],
             'name' => ['required', 'string', 'max:255'],
+            'device_user_id' => ['nullable', 'string', 'max:255'],
+            'device_cardno' => ['nullable', 'string', 'max:255'],
             'nid' => ['nullable', 'string', 'max:255'],
             'dob' => ['nullable', 'date'],
             'address' => ['nullable', 'string'],

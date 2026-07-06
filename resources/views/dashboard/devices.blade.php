@@ -165,12 +165,20 @@
 
                     {{-- Action Buttons --}}
                     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <button type="button" style="flex: 1; padding: 0.5rem; background: #10b981; color: white; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; gap: 0.375rem; transition: all 0.2s;">
+                        <button type="button" onclick="syncDeviceUsers(this, {{ $device->id }}, @js($device->name))" style="flex: 1; padding: 0.5rem; background: #10b981; color: white; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; gap: 0.375rem; transition: all 0.2s;">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1rem; height: 1rem;">
                                 <polyline points="23 4 23 10 17 10"></polyline>
                                 <path d="M20.49 15a9 9 0 1 1-2-8.12"></path>
                             </svg>
-                            Sync Now
+                            <span>Sync Now</span>
+                        </button>
+                        <button type="button" onclick="importDeviceData(this, {{ $device->id }}, @js($device->name))" style="padding: 0.5rem 0.75rem; background: white; color: #6b7280; border: 1px solid #d1d5db; border-radius: 0.5rem; font-weight: 600; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; gap: 0.375rem; transition: all 0.2s;" title="Import Device Data">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1rem; height: 1rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline stroke-linecap="round" stroke-linejoin="round" points="7 10 12 15 17 10"></polyline>
+                                <line stroke-linecap="round" stroke-linejoin="round" x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Import Device Data
                         </button>
                         <button type="button" onclick="testDevice({{ $device->id }}, @js($device->name))" style="padding: 0.5rem 0.75rem; background: white; color: #6b7280; border: 1px solid #d1d5db; border-radius: 0.5rem; font-weight: 600; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; gap: 0.375rem; transition: all 0.2s;">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1rem; height: 1rem;">
@@ -210,6 +218,24 @@
                 <p style="font-size: 1rem; font-weight: 500;">No devices found.</p>
             </div>
         @endif
+    </div>
+</div>
+
+{{-- Import Progress Modal --}}
+<div id="importProgressModal" style="display: none; position: fixed; inset: 0; z-index: 9500; background: rgba(0,0,0,0.45); align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: white; border-radius: 0.875rem; width: 100%; max-width: 34rem; box-shadow: 0 20px 40px rgba(0,0,0,0.2); color: #000;">
+        <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 1rem; font-weight: 700;">Import Device Data</h3>
+            <button type="button" onclick="closeImportProgressModal()" style="border: none; background: none; font-size: 1.25rem; line-height: 1; color: #6b7280; cursor: pointer;">×</button>
+        </div>
+        <div style="padding: 1rem 1.25rem;">
+            <p id="importProgressStatus" style="margin: 0 0 0.75rem; font-size: 0.875rem; color: #374151;">Waiting to start import...</p>
+            <div style="height: 0.625rem; background: #e5e7eb; border-radius: 999px; overflow: hidden;">
+                <div id="importProgressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #10b981, #059669); transition: width 0.2s ease;"></div>
+            </div>
+            <p id="importProgressPercent" style="margin: 0.5rem 0 0; font-size: 0.75rem; color: #6b7280;">0%</p>
+            <pre id="importProgressLog" style="margin-top: 0.9rem; max-height: 240px; overflow-y: auto; background: #0f172a; color: #e2e8f0; padding: 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; line-height: 1.4;">Fetching attendance data...</pre>
+        </div>
     </div>
 </div>
 
@@ -565,12 +591,179 @@
         });
     }
 
+    function syncDeviceUsers(button, deviceId, deviceName) {
+        const label = deviceName || 'this device';
+        showConfirm('Sync Device Users', `Fetch all users from ${label} and sync to employees?`).then(function (confirmed) {
+            if (!confirmed) {
+                return;
+            }
+
+            const labelNode = button.querySelector('span');
+            const originalLabel = labelNode ? labelNode.textContent : 'Sync Now';
+
+            button.disabled = true;
+            button.style.opacity = '0.75';
+            button.style.cursor = 'not-allowed';
+
+            if (labelNode) {
+                labelNode.textContent = 'Syncing...';
+            }
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/dashboard/devices/${deviceId}/sync-users`;
+            form.innerHTML = '<input type="hidden" name="_token" value="{{ csrf_token() }}">';
+            document.body.appendChild(form);
+            form.submit();
+
+            setTimeout(function () {
+                button.disabled = false;
+                button.style.opacity = '1';
+                button.style.cursor = 'pointer';
+
+                if (labelNode) {
+                    labelNode.textContent = originalLabel;
+                }
+            }, 12000);
+        });
+    }
+
+    function openImportProgressModal() {
+        const modal = document.getElementById('importProgressModal');
+        const log = document.getElementById('importProgressLog');
+        const status = document.getElementById('importProgressStatus');
+        const bar = document.getElementById('importProgressBar');
+        const percent = document.getElementById('importProgressPercent');
+
+        modal.style.display = 'flex';
+        log.textContent = 'Fetching attendance data...';
+        status.textContent = 'Fetching attendance data...';
+        bar.style.width = '0%';
+        percent.textContent = '0%';
+    }
+
+    function closeImportProgressModal() {
+        document.getElementById('importProgressModal').style.display = 'none';
+    }
+
+    function appendImportLog(message) {
+        const log = document.getElementById('importProgressLog');
+        log.textContent += `\n${message}`;
+        log.scrollTop = log.scrollHeight;
+    }
+
+    function updateImportProgress(payload) {
+        const percentValue = Number(payload.percentage || 0);
+        document.getElementById('importProgressStatus').textContent = payload.message || 'Processing...';
+        document.getElementById('importProgressBar').style.width = `${percentValue}%`;
+        document.getElementById('importProgressPercent').textContent = `${percentValue}%`;
+    }
+
+    async function importDeviceData(button, deviceId, deviceName) {
+        const label = deviceName || 'this device';
+        const confirmed = await showConfirm('Import Device Data', `Import attendance records from ${label}?`);
+
+        if (!confirmed) {
+            return;
+        }
+
+        button.disabled = true;
+        button.style.opacity = '0.75';
+        button.style.cursor = 'not-allowed';
+
+        openImportProgressModal();
+
+        try {
+            const response = await fetch(`/dashboard/devices/${deviceId}/import-attendance`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'text/plain',
+                },
+            });
+
+            if (!response.ok || !response.body) {
+                appendImportLog('Import failed: unable to connect to import endpoint.');
+                document.getElementById('importProgressStatus').textContent = 'Import failed.';
+                return;
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+
+                if (done) {
+                    break;
+                }
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed) {
+                        continue;
+                    }
+
+                    let payload;
+                    try {
+                        payload = JSON.parse(trimmed);
+                    } catch (error) {
+                        continue;
+                    }
+
+                    if (payload.type === 'status') {
+                        appendImportLog(payload.message || 'Starting import...');
+                    }
+
+                    if (payload.type === 'progress') {
+                        updateImportProgress(payload);
+                        appendImportLog(`✔ ${payload.processed} / ${payload.total} (${payload.percentage}%)`);
+                    }
+
+                    if (payload.type === 'error') {
+                        appendImportLog(`Error: ${payload.message || 'Unknown error'}`);
+                        document.getElementById('importProgressStatus').textContent = 'Import failed.';
+                    }
+
+                    if (payload.type === 'complete') {
+                        updateImportProgress({
+                            percentage: 100,
+                            message: 'Import completed successfully.',
+                        });
+                        appendImportLog('');
+                        appendImportLog('Import Completed Successfully');
+                        appendImportLog(`Inserted: ${payload.inserted}`);
+                        appendImportLog(`Skipped (Duplicates): ${payload.skipped}`);
+                        appendImportLog(`Failed: ${payload.failed}`);
+                        appendImportLog(`Total Processed: ${payload.processed}`);
+                    }
+                }
+            }
+        } catch (error) {
+            appendImportLog(`Import failed: ${error.message || 'Unknown error'}`);
+            document.getElementById('importProgressStatus').textContent = 'Import failed.';
+        } finally {
+            button.disabled = false;
+            button.style.opacity = '1';
+            button.style.cursor = 'pointer';
+        }
+    }
+
     document.getElementById('addDeviceModal').addEventListener('click', function (e) {
         if (e.target === this) closeAddDeviceModal();
     });
 
     document.getElementById('editDeviceModal').addEventListener('click', function (e) {
         if (e.target === this) closeEditDeviceModal();
+    });
+
+    document.getElementById('importProgressModal').addEventListener('click', function (e) {
+        if (e.target === this) closeImportProgressModal();
     });
 
     document.getElementById('apiPort').addEventListener('input', function () {

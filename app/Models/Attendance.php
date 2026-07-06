@@ -13,12 +13,18 @@ class Attendance extends Model
         'check_in',
         'check_out',
         'date',
+        'device_user_id',
+        'employee_name',
+        'record_time',
+        'record_date',
+        'record_time_only',
     ];
 
     protected $casts = [
         'check_in' => 'datetime',
         'check_out' => 'datetime',
         'date' => 'date',
+        'record_time' => 'datetime',
     ];
 
     public function employee()

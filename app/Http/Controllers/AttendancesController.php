@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Models\AttendanceSettings;
 use App\Models\Device;
 use App\Models\Employee;
+use App\Models\LeaveRequest;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class AttendancesController extends Controller
@@ -14,6 +17,75 @@ class AttendancesController extends Controller
      */
     public function index(Request $request)
     {
+        $selectedDate = $request->filled('date')
+            ? Carbon::parse($request->string('date'))->startOfDay()
+            : now()->startOfDay();
+
+        $workingHoursStart = AttendanceSettings::current()->working_hours_start;
+        $workingStartTime = $workingHoursStart ? Carbon::parse($workingHoursStart)->format('H:i:s') : '09:00:00';
+
+        $presentCount = Attendance::query()
+            ->whereRaw('DATE(date) = ?', [$selectedDate->toDateString()], 'and')
+            ->where('check_in', '!=', null)
+            ->distinct('employee_id')
+            ->count('employee_id');
+
+        $lateCount = Attendance::query()
+            ->whereRaw('DATE(date) = ?', [$selectedDate->toDateString()], 'and')
+            ->where('check_in', '!=', null)
+            ->whereRaw('TIME(check_in) > ?', [$workingStartTime], 'and')
+            ->distinct('employee_id')
+            ->count('employee_id');
+
+        $onLeaveCount = LeaveRequest::query()
+            ->where('status', 'approved')
+            ->whereRaw('DATE(start_date) <= ?', [$selectedDate->toDateString()], 'and')
+            ->whereRaw('DATE(end_date) >= ?', [$selectedDate->toDateString()], 'and')
+            ->distinct('employee_id')
+            ->count('employee_id');
+
+        $totalEmployees = Employee::query()->count('*');
+        $absentCount = max($totalEmployees - $presentCount - $onLeaveCount, 0);
+
+        $kpis = [
+            [
+                'label' => 'Present',
+                'value' => $presentCount,
+                'icon_class' => 'stat-icon-success',
+                'icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>',
+                'change_class' => 'stat-change-up',
+                'change_icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path stroke-linecap="round" stroke-linejoin="round" d="M18 15l-6-6-6 6"/></svg>',
+                'change_text' => 'Today',
+            ],
+            [
+                'label' => 'Late',
+                'value' => $lateCount,
+                'icon_class' => 'stat-icon-warning',
+                'icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+                'change_class' => 'stat-change-down',
+                'change_icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>',
+                'change_text' => 'Today',
+            ],
+            [
+                'label' => 'Absent',
+                'value' => $absentCount,
+                'icon_class' => 'stat-icon-danger',
+                'icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="18" y1="8" x2="23" y2="13"/><line x1="23" y1="8" x2="18" y2="13"/></svg>',
+                'change_class' => 'stat-change-down',
+                'change_icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>',
+                'change_text' => 'Today',
+            ],
+            [
+                'label' => 'On Leave',
+                'value' => $onLeaveCount,
+                'icon_class' => 'stat-icon-info',
+                'icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 13c2 0 2-2 4-2s2 2 4 2 2-2 4-2"/><path stroke-linecap="round" stroke-linejoin="round" d="M4 18c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 8c1.5-2.5 5-3.5 7-1 2-2.5 5.5-1.5 7 1"/></svg>',
+                'change_class' => 'stat-change-up',
+                'change_icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path stroke-linecap="round" stroke-linejoin="round" d="M18 15l-6-6-6 6"/></svg>',
+                'change_text' => 'Today',
+            ],
+        ];
+
         $query = Attendance::query();
 
         // Filter by date range
@@ -40,7 +112,9 @@ class AttendancesController extends Controller
             ->orderByDesc('date')
             ->paginate(50);
 
-        return inertia('Attendances/Index', [
+        return view('dashboard.attendance', [
+            'kpis' => $kpis,
+            'selectedDate' => $selectedDate->format('m/d/Y'),
             'attendances' => $attendances,
             'employees' => Employee::with('user')->get(),
             'devices' => Device::all(),
@@ -53,7 +127,7 @@ class AttendancesController extends Controller
      */
     public function create()
     {
-        return inertia('Attendances/Create', [
+        return view('dashboard.attendance-create', [
             'employees' => Employee::with('user')->get(),
             'devices' => Device::all(),
         ]);
@@ -124,7 +198,7 @@ class AttendancesController extends Controller
      */
     public function destroy(Attendance $attendance)
     {
-        $attendance->delete();
+        Attendance::destroy($attendance->id);
 
         return redirect()->route('attendances.index')->with('success', 'Attendance record deleted successfully');
     }

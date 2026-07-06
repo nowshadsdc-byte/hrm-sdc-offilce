@@ -68,6 +68,24 @@
 
             <div class="form-row">
                 <div class="form-group">
+                    <label for="device_user_id" class="form-label">Device User ID</label>
+                    <input type="text" id="device_user_id" name="device_user_id" class="form-input @error('device_user_id') is-invalid @enderror" value="{{ old('device_user_id') }}" placeholder="DU123">
+                    @error('device_user_id')
+                        <span class="form-error">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="device_cardno" class="form-label">Device Card No</label>
+                    <input type="text" id="device_cardno" name="device_cardno" class="form-input @error('device_cardno') is-invalid @enderror" value="{{ old('device_cardno') }}" placeholder="CARD-001">
+                    @error('device_cardno')
+                        <span class="form-error">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
                     <label for="designation" class="form-label">Designation</label>
                     <input type="text" id="designation" name="designation" class="form-input @error('designation') is-invalid @enderror" value="{{ old('designation') }}" placeholder="Operations Manager">
                     @error('designation')
@@ -76,12 +94,20 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="job_title" class="form-label">Job Title</label>
-                    <input type="text" id="job_title" name="job_title" class="form-input @error('job_title') is-invalid @enderror" value="{{ old('job_title') }}" placeholder="Senior Accountant">
-                    @error('job_title')
+                    <label for="role" class="form-label">Role</label>
+                    <input type="text" id="role" name="role" class="form-input @error('role') is-invalid @enderror" value="{{ old('role') }}" placeholder="Manager">
+                    @error('role')
                         <span class="form-error">{{ $message }}</span>
                     @enderror
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label for="job_title" class="form-label">Job Title</label>
+                <input type="text" id="job_title" name="job_title" class="form-input @error('job_title') is-invalid @enderror" value="{{ old('job_title') }}" placeholder="Senior Accountant">
+                @error('job_title')
+                    <span class="form-error">{{ $message }}</span>
+                @enderror
             </div>
 
             <div class="form-group">

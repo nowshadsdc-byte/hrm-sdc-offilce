@@ -40,6 +40,14 @@
                 <p>{{ $employee->phone ?? '—' }}</p>
             </div>
             <div>
+                <h3 class="detail-label">Device User ID</h3>
+                <p>{{ $employee->device_user_id ?? '—' }}</p>
+            </div>
+            <div>
+                <h3 class="detail-label">Device Card No</h3>
+                <p>{{ $employee->device_cardno ?? '—' }}</p>
+            </div>
+            <div>
                 <h3 class="detail-label">Department</h3>
                 <p>{{ $employee->department ?? '—' }}</p>
             </div>
@@ -50,6 +58,10 @@
             <div>
                 <h3 class="detail-label">Job Title</h3>
                 <p>{{ $employee->job_title ?? '—' }}</p>
+            </div>
+            <div>
+                <h3 class="detail-label">Role</h3>
+                <p>{{ $employee->role ?? '—' }}</p>
             </div>
             <div>
                 <h3 class="detail-label">Join Date</h3>

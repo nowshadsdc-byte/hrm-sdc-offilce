@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AttendancesController;
 use App\Http\Controllers\AttendanceSettingsController;
 use App\Http\Controllers\DeviceController;
@@ -41,15 +42,19 @@ Route::prefix('attendances')->middleware(['auth', 'tyro-dashboard.admin'])->grou
     Route::get('/', [AttendancesController::class, 'index'])->name('attendances.index');
     Route::get('/create', [AttendancesController::class, 'create'])->name('attendances.create');
     Route::post('/', [AttendancesController::class, 'store'])->name('attendances.store');
+    Route::get('/export', [AttendancesController::class, 'export'])->name('attendances.export');
     Route::get('/{attendance}', [AttendancesController::class, 'show'])->name('attendances.show');
     Route::get('/{attendance}/edit', [AttendancesController::class, 'edit'])->name('attendances.edit');
     Route::put('/{attendance}', [AttendancesController::class, 'update'])->name('attendances.update');
     Route::delete('/{attendance}', [AttendancesController::class, 'destroy'])->name('attendances.destroy');
-    Route::get('/export', [AttendancesController::class, 'export'])->name('attendances.export');
 });
 
 Route::get('dashboard/devices', [DeviceController::class, 'index'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.devices');
 Route::post('dashboard/devices', [DeviceController::class, 'store'])->middleware(['auth', 'tyro-dashboard.admin'])->name('devices.store');
 Route::put('dashboard/devices/{device}', [DeviceController::class, 'update'])->middleware(['auth', 'tyro-dashboard.admin'])->name('devices.update');
 Route::post('dashboard/devices/{device}/test', [DeviceController::class, 'test'])->middleware(['auth', 'tyro-dashboard.admin'])->name('devices.test');
+Route::post('dashboard/devices/{device}/sync-users', [DeviceController::class, 'syncUsers'])->middleware(['auth', 'tyro-dashboard.admin'])->name('devices.sync-users');
+Route::post('dashboard/devices/{device}/import-attendance', [AttendanceController::class, 'syncDeviceData'])->middleware(['auth', 'tyro-dashboard.admin'])->name('devices.import-attendance');
 Route::delete('dashboard/devices/{device}', [DeviceController::class, 'destroy'])->middleware(['auth', 'tyro-dashboard.admin'])->name('devices.destroy');
+
+Route::get('dashboard/attendance', [AttendancesController::class, 'index'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendance');

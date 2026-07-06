@@ -4,13 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Device;
 use App\Services\APIDeviceCheckOnline;
+use App\Services\APIDeviceUserSync;
 use HasinHayder\Tyro\Support\TyroAudit;
 use Illuminate\Http\Request;
 use Throwable;
 
 class DeviceController extends Controller
 {
-    public function __construct(private APIDeviceCheckOnline $apiDeviceCheckOnline) {}
+    public function __construct(
+        private APIDeviceCheckOnline $apiDeviceCheckOnline,
+        private APIDeviceUserSync $apiDeviceUserSync,
+    ) {}
 
     public function index()
     {
@@ -105,6 +109,44 @@ class DeviceController extends Controller
             : 'Device test failed: '.$connectionResult['message'];
 
         return back()->with($connectionResult['ok'] ? 'success' : 'error', $message);
+    }
+
+    public function syncUsers(Device $device)
+    {
+        $result = $this->apiDeviceUserSync->sync($device);
+
+        if ($result['ok']) {
+            $device->forceFill([
+                'status' => 'online',
+                'last_sync_at' => now(),
+                'last_error' => null,
+            ])->save();
+
+            $this->auditSafely('device.users_synced', $device, null, [
+                'sync_result' => $result,
+            ]);
+
+            $message = sprintf(
+                'Device users synced successfully. Total: %d, Created: %d, Updated: %d, Skipped: %d.',
+                $result['total'],
+                $result['created'],
+                $result['updated'],
+                $result['skipped'],
+            );
+
+            return back()->with('success', $message);
+        }
+
+        $device->forceFill([
+            'status' => 'error',
+            'last_error' => $result['message'],
+        ])->save();
+
+        $this->auditSafely('device.users_sync_failed', $device, null, [
+            'sync_result' => $result,
+        ]);
+
+        return back()->with('error', 'Device user sync failed: '.$result['message']);
     }
 
     public function destroy(Device $device)

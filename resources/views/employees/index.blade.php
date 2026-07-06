@@ -120,7 +120,11 @@
                     <td style="padding: 1rem; color: #000;">{{ $employee->department ?? 'N/A' }}</td>
                     <td style="padding: 1rem; color: #000;">{{ $employee->designation ?? 'N/A' }}</td>
                     <td style="padding: 1rem;">
-                        @if($employee->user?->roles?->first())
+                        @if($employee->role)
+                            <span style="display: inline-block; padding: 0.375rem 0.75rem; background: #ecfeff; color: #0f766e; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600;">
+                                {{ ucfirst(str_replace('_', ' ', $employee->role)) }}
+                            </span>
+                        @elseif($employee->user?->roles?->first())
                             <span style="display: inline-block; padding: 0.375rem 0.75rem; background: #e0e7ff; color: #4f46e5; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600;">
                                 {{ ucfirst(str_replace('_', ' ', $employee->user->roles->first()->name)) }}
                             </span>
@@ -267,6 +271,17 @@
                 <div>
                     <label style="display: block; font-weight: 500; color: #000; margin-bottom: 0.5rem;">Address</label>
                     <textarea name="address" rows="2" style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem;"></textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="display: block; font-weight: 500; color: #000; margin-bottom: 0.5rem;">Device User ID</label>
+                        <input type="text" name="device_user_id" style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 500; color: #000; margin-bottom: 0.5rem;">Device Card No</label>
+                        <input type="text" name="device_cardno" style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem;">
+                    </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
