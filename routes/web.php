@@ -7,6 +7,7 @@ use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\LeaveRequestController;
+use App\Http\Controllers\SyncTodayController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -55,6 +56,10 @@ Route::put('dashboard/devices/{device}', [DeviceController::class, 'update'])->m
 Route::post('dashboard/devices/{device}/test', [DeviceController::class, 'test'])->middleware(['auth', 'tyro-dashboard.admin'])->name('devices.test');
 Route::post('dashboard/devices/{device}/sync-users', [DeviceController::class, 'syncUsers'])->middleware(['auth', 'tyro-dashboard.admin'])->name('devices.sync-users');
 Route::post('dashboard/devices/{device}/import-attendance', [AttendanceController::class, 'syncDeviceData'])->middleware(['auth', 'tyro-dashboard.admin'])->name('devices.import-attendance');
+Route::post('dashboard/devices/{device}/sync-today', [SyncTodayController::class, 'sync'])->middleware(['auth', 'tyro-dashboard.admin'])->name('devices.sync-today');
 Route::delete('dashboard/devices/{device}', [DeviceController::class, 'destroy'])->middleware(['auth', 'tyro-dashboard.admin'])->name('devices.destroy');
 
 Route::get('dashboard/attendance', [AttendancesController::class, 'index'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendance');
+Route::post('dashboard/attendance/sync', [AttendancesController::class, 'sync'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendance.sync');
+Route::post('dashboard/attendance/sync-now', [AttendancesController::class, 'syncNow'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendance.sync-now');
+Route::put('dashboard/attendance/{attendance}/adjust', [AttendancesController::class, 'adjust'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendance.adjust');

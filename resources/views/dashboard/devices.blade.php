@@ -172,6 +172,15 @@
                             </svg>
                             <span>Sync Now</span>
                         </button>
+                        <button type="button" onclick="syncTodayData(this, {{ $device->id }}, @js($device->name))" style="padding: 0.5rem 0.75rem; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 0.5rem; font-weight: 600; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; gap: 0.375rem; transition: all 0.2s;" title="Sync Today">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1rem; height: 1rem;">
+                                <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            Sync Today
+                        </button>
                         <button type="button" onclick="importDeviceData(this, {{ $device->id }}, @js($device->name))" style="padding: 0.5rem 0.75rem; background: white; color: #6b7280; border: 1px solid #d1d5db; border-radius: 0.5rem; font-weight: 600; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; gap: 0.375rem; transition: all 0.2s;" title="Import Device Data">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1rem; height: 1rem;">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -747,6 +756,103 @@
         } catch (error) {
             appendImportLog(`Import failed: ${error.message || 'Unknown error'}`);
             document.getElementById('importProgressStatus').textContent = 'Import failed.';
+        } finally {
+            button.disabled = false;
+            button.style.opacity = '1';
+            button.style.cursor = 'pointer';
+        }
+    }
+
+    async function syncTodayData(button, deviceId, deviceName) {
+        const label = deviceName || 'this device';
+        const confirmed = await showConfirm('Sync Today', `Sync today's attendance records from ${label}?`);
+
+        if (!confirmed) {
+            return;
+        }
+
+        button.disabled = true;
+        button.style.opacity = '0.75';
+        button.style.cursor = 'not-allowed';
+
+        openImportProgressModal();
+        document.getElementById('importProgressStatus').textContent = 'Fetching today attendance data...';
+        document.getElementById('importProgressLog').textContent = 'Fetching today attendance data...';
+
+        try {
+            const response = await fetch(`/dashboard/devices/${deviceId}/sync-today`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'text/plain',
+                },
+            });
+
+            if (!response.ok || !response.body) {
+                appendImportLog('Sync today failed: unable to connect to endpoint.');
+                document.getElementById('importProgressStatus').textContent = 'Sync today failed.';
+                return;
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+
+                if (done) {
+                    break;
+                }
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed) {
+                        continue;
+                    }
+
+                    let payload;
+                    try {
+                        payload = JSON.parse(trimmed);
+                    } catch (error) {
+                        continue;
+                    }
+
+                    if (payload.type === 'status') {
+                        appendImportLog(payload.message || 'Starting today sync...');
+                    }
+
+                    if (payload.type === 'progress') {
+                        updateImportProgress(payload);
+                        appendImportLog(`✔ ${payload.processed} / ${payload.total} (${payload.percentage}%)`);
+                    }
+
+                    if (payload.type === 'error') {
+                        appendImportLog(`Error: ${payload.message || 'Unknown error'}`);
+                        document.getElementById('importProgressStatus').textContent = 'Sync today failed.';
+                    }
+
+                    if (payload.type === 'complete') {
+                        updateImportProgress({
+                            percentage: 100,
+                            message: 'Sync today completed successfully.',
+                        });
+                        appendImportLog('');
+                        appendImportLog('Sync Today Completed Successfully');
+                        appendImportLog(`Inserted: ${payload.inserted}`);
+                        appendImportLog(`Skipped (Duplicates/Non-Today): ${payload.skipped}`);
+                        appendImportLog(`Failed: ${payload.failed}`);
+                        appendImportLog(`Total Processed: ${payload.processed}`);
+                    }
+                }
+            }
+        } catch (error) {
+            appendImportLog(`Sync today failed: ${error.message || 'Unknown error'}`);
+            document.getElementById('importProgressStatus').textContent = 'Sync today failed.';
         } finally {
             button.disabled = false;
             button.style.opacity = '1';
