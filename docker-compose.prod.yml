@@ -1,0 +1,29 @@
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: production
+        image: tyro-app:latest
+        restart: unless-stopped
+        ports:
+            - '${APP_PORT:-80}:80'
+        env_file:
+            - .env.production
+        # extra_hosts lets the container reach a MySQL server running on the
+        # Docker host itself via host.docker.internal (Windows/Mac work out
+        # of the box; Linux hosts need this mapping explicitly).
+        extra_hosts:
+            - 'host.docker.internal:host-gateway'
+        volumes:
+            - app-storage:/var/www/html/storage/app
+        networks:
+            - tyro
+
+networks:
+    tyro:
+        driver: bridge
+
+volumes:
+    app-storage:
+        driver: local

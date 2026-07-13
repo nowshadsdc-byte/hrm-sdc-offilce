@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AttendanceReportController;
 use App\Http\Controllers\AttendancesController;
 use App\Http\Controllers\AttendanceSettingsController;
 use App\Http\Controllers\DeviceController;
@@ -63,3 +64,6 @@ Route::get('dashboard/attendance', [AttendancesController::class, 'index'])->mid
 Route::post('dashboard/attendance/sync', [AttendancesController::class, 'sync'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendance.sync');
 Route::post('dashboard/attendance/sync-now', [AttendancesController::class, 'syncNow'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendance.sync-now');
 Route::put('dashboard/attendance/{attendance}/adjust', [AttendancesController::class, 'adjust'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendance.adjust');
+
+Route::get('dashboard/attendancereport', [AttendanceReportController::class, 'index'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendancereport');
+Route::get('dashboard/attendancereport/export', [AttendanceReportController::class, 'export'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendancereport.export');
