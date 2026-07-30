@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 Route::inertia('/', 'welcome')->name('home');
 
 Route::resource('employees', EmployeeController::class);
+Route::post('/employees/{employee}/sync-attendance', [EmployeeController::class, 'syncAttendance'])->name('employees.sync-attendance');
 
 Route::prefix('attendance-settings')->middleware(['auth', 'attendance-settings.access'])->group(function () {
     Route::get('/', [AttendanceSettingsController::class, 'index'])->name('attendance-settings.index');
@@ -24,6 +25,7 @@ Route::prefix('attendance-settings')->middleware(['auth', 'attendance-settings.a
     Route::post('/shifts', [AttendanceSettingsController::class, 'storeShift'])->name('shifts.store');
     Route::put('/shifts/{shift}', [AttendanceSettingsController::class, 'updateShift'])->name('shifts.update');
     Route::delete('/shifts/{shift}', [AttendanceSettingsController::class, 'destroyShift'])->name('shifts.destroy');
+    Route::put('/leave-policy', [AttendanceSettingsController::class, 'updateLeavePolicy'])->name('attendance-settings.leave-policy');
 });
 
 Route::prefix('holiday-calendar')->middleware(['auth', 'holiday-calendar.access'])->group(function () {
@@ -35,6 +37,11 @@ Route::prefix('holiday-calendar')->middleware(['auth', 'holiday-calendar.access'
 Route::prefix('leave-requests')->middleware(['auth'])->group(function () {
     Route::get('/', [LeaveRequestController::class, 'index'])->name('leave-requests.index');
     Route::post('/', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
+});
+
+// Approving, rejecting, and deleting leave requests changes another
+// employee's leave balance, so only admins may perform these actions.
+Route::prefix('leave-requests')->middleware(['auth', 'tyro-dashboard.admin'])->group(function () {
     Route::put('/{leaveRequest}/approve', [LeaveRequestController::class, 'approve'])->name('leave-requests.approve');
     Route::put('/{leaveRequest}/reject', [LeaveRequestController::class, 'reject'])->name('leave-requests.reject');
     Route::delete('/{leaveRequest}', [LeaveRequestController::class, 'destroy'])->name('leave-requests.destroy');
@@ -48,6 +55,7 @@ Route::prefix('attendances')->middleware(['auth', 'tyro-dashboard.admin'])->grou
     Route::get('/{attendance}', [AttendancesController::class, 'show'])->name('attendances.show');
     Route::get('/{attendance}/edit', [AttendancesController::class, 'edit'])->name('attendances.edit');
     Route::put('/{attendance}', [AttendancesController::class, 'update'])->name('attendances.update');
+    Route::patch('/{attendance}/quick-update', [AttendancesController::class, 'quickUpdate'])->name('attendances.quick-update');
     Route::delete('/{attendance}', [AttendancesController::class, 'destroy'])->name('attendances.destroy');
 });
 
@@ -59,11 +67,6 @@ Route::post('dashboard/devices/{device}/sync-users', [DeviceController::class, '
 Route::post('dashboard/devices/{device}/import-attendance', [AttendanceController::class, 'syncDeviceData'])->middleware(['auth', 'tyro-dashboard.admin'])->name('devices.import-attendance');
 Route::post('dashboard/devices/{device}/sync-today', [SyncTodayController::class, 'sync'])->middleware(['auth', 'tyro-dashboard.admin'])->name('devices.sync-today');
 Route::delete('dashboard/devices/{device}', [DeviceController::class, 'destroy'])->middleware(['auth', 'tyro-dashboard.admin'])->name('devices.destroy');
-
-Route::get('dashboard/attendance', [AttendancesController::class, 'index'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendance');
-Route::post('dashboard/attendance/sync', [AttendancesController::class, 'sync'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendance.sync');
-Route::post('dashboard/attendance/sync-now', [AttendancesController::class, 'syncNow'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendance.sync-now');
-Route::put('dashboard/attendance/{attendance}/adjust', [AttendancesController::class, 'adjust'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendance.adjust');
 
 Route::get('dashboard/attendancereport', [AttendanceReportController::class, 'index'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendancereport');
 Route::get('dashboard/attendancereport/export', [AttendanceReportController::class, 'export'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendancereport.export');

@@ -113,16 +113,18 @@ class SyncDeviceAttendance
                         continue;
                     }
 
-                    $recordTime = Carbon::parse($recordTimeRaw);
-                    $recordTimestamp = $recordTime->format('Y-m-d H:i:s');
+                    $recordTime = $this->parseRecordTime($recordTimeRaw);
+                    $recordTimezone = $this->resolveRecordTimezone($recordTimeRaw, $recordTime);
+                    $recordTimestamp = $recordTime->copy()->setTimezone('UTC')->format('Y-m-d H:i:s');
                     $rawUniqueKey = $deviceUserId.'|'.$recordTimestamp;
 
                     $rawRows[] = [
                         'deviceUserId' => $deviceUserId,
                         'employeeName' => $employeeName,
-                        'date' => $recordTime->format('Y-m-d'),
-                        'time' => $recordTime->format('H:i:s'),
+                        'date' => $recordTime->copy()->setTimezone('UTC')->format('Y-m-d'),
+                        'time' => $recordTime->copy()->setTimezone('UTC')->format('H:i:s'),
                         'recordTime' => $recordTimestamp,
+                        'timeZone' => $recordTimezone,
                         'uniqueKey' => $rawUniqueKey,
                         'created_at' => now(),
                         'updated_at' => now(),
@@ -237,5 +239,30 @@ class SyncDeviceAttendance
         }
 
         return null;
+    }
+
+    protected function parseRecordTime(string $recordTimeRaw): Carbon
+    {
+        $trimmed = trim($recordTimeRaw);
+        $hasUtcOrOffset = preg_match('/(?:Z|[+-]\d{2}:\d{2})$/i', $trimmed) === 1;
+
+        if ($hasUtcOrOffset) {
+            return Carbon::parse($trimmed);
+        }
+
+        return Carbon::parse($trimmed, 'UTC');
+    }
+
+    protected function resolveRecordTimezone(string $recordTimeRaw, Carbon $recordTime): string
+    {
+        $trimmed = trim($recordTimeRaw);
+
+        if (preg_match('/(?:Z|[+-]\d{2}:\d{2})$/i', $trimmed) === 1) {
+            return $recordTime->getTimezone()->getName() === 'Z'
+                ? 'UTC'
+                : $recordTime->getTimezone()->getName();
+        }
+
+        return 'UTC';
     }
 }

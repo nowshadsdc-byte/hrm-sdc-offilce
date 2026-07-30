@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Attendance extends Model
@@ -19,6 +20,8 @@ class Attendance extends Model
         'overtime_minutes',
         'late_status',
         'late_duration_minutes',
+        'early_leave_status',
+        'early_leave_minutes',
         'remarks',
         'date',
         'device_user_id',
@@ -26,6 +29,7 @@ class Attendance extends Model
         'record_time',
         'record_date',
         'record_time_only',
+        'timezone',
         'last_raw_punch_at',
         'raw_punch_signature',
         'last_synced_at',
@@ -41,7 +45,31 @@ class Attendance extends Model
         'last_raw_punch_at' => 'datetime',
         'last_synced_at' => 'datetime',
         'late_status' => 'boolean',
+        'early_leave_status' => 'boolean',
     ];
+
+    /**
+     * These accessors expose the stored times exactly as the server recorded them (UTC),
+     * regardless of the application's configured timezone, so no conversion ever occurs.
+     */
+    public function getCheckInUtcAttribute(): ?Carbon
+    {
+        return $this->rawUtc($this->getRawOriginal('check_in'));
+    }
+
+    public function getCheckOutUtcAttribute(): ?Carbon
+    {
+        return $this->rawUtc($this->getRawOriginal('check_out'));
+    }
+
+    protected function rawUtc(?string $value): ?Carbon
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return Carbon::createFromFormat('Y-m-d H:i:s', $value, 'UTC');
+    }
 
     public function employee()
     {

@@ -14,6 +14,7 @@ class RawDeviceData extends Model
         'date',
         'time',
         'recordTime',
+        'timeZone',
         'uniqueKey',
     ];
 }

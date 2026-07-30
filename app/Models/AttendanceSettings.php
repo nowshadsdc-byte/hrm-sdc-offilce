@@ -20,6 +20,7 @@ class AttendanceSettings extends Model
         'backup_frequency',
         'backup_path',
         'last_backup_at',
+        'default_annual_leave_days',
     ];
 
     protected $casts = [
@@ -28,6 +29,7 @@ class AttendanceSettings extends Model
         'last_backup_at' => 'datetime',
         'working_hours_start' => 'datetime:H:i',
         'working_hours_end' => 'datetime:H:i',
+        'default_annual_leave_days' => 'integer',
     ];
 
     /**

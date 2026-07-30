@@ -162,6 +162,9 @@
                     </td>
                     <td style="padding: 1rem; text-align: center;">
                         <div style="display: flex; justify-content: center; gap: 0.5rem;">
+                            <a href="{{ route('employees.show', $employee) }}" title="View Employee" style="padding: 0.5rem 0.75rem; background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; text-decoration: none;">
+                                View
+                            </a>
                             <a href="{{ route('employees.edit', $employee) }}" title="Edit Employee" style="padding: 0.5rem 0.75rem; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; text-decoration: none;">
                                 Edit
                             </a>

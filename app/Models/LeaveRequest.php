@@ -42,6 +42,6 @@ class LeaveRequest extends Model
 
     public function getDaysCountAttribute()
     {
-        return $this->end_date->diffInDays($this->start_date) + 1;
+        return $this->start_date->diffInDays($this->end_date, absolute: true) + 1;
     }
 }

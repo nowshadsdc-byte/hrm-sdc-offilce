@@ -114,7 +114,8 @@ class SyncToday
                         continue;
                     }
 
-                    $recordTime = Carbon::parse($recordTimeRaw);
+                    $recordTime = $this->parseRecordTime($recordTimeRaw);
+                    $recordTimezone = $this->resolveRecordTimezone($recordTimeRaw, $recordTime);
 
                     if ($recordTime->toDateString() !== $todayDate) {
                         $skipped++;
@@ -123,7 +124,7 @@ class SyncToday
                         continue;
                     }
 
-                    $recordTimestamp = $recordTime->format('Y-m-d H:i:s');
+                    $recordTimestamp = $recordTime->copy()->setTimezone('UTC')->format('Y-m-d H:i:s');
                     $rawUniqueKey = $deviceUserId.'|'.$recordTimestamp;
 
                     $rawRows[] = [
@@ -245,5 +246,30 @@ class SyncToday
         }
 
         return null;
+    }
+
+    protected function parseRecordTime(string $recordTimeRaw): Carbon
+    {
+        $trimmed = trim($recordTimeRaw);
+        $hasUtcOrOffset = preg_match('/(?:Z|[+-]\d{2}:\d{2})$/i', $trimmed) === 1;
+
+        if ($hasUtcOrOffset) {
+            return Carbon::parse($trimmed);
+        }
+
+        return Carbon::parse($trimmed, 'UTC');
+    }
+
+    protected function resolveRecordTimezone(string $recordTimeRaw, Carbon $recordTime): string
+    {
+        $trimmed = trim($recordTimeRaw);
+
+        if (preg_match('/(?:Z|[+-]\d{2}:\d{2})$/i', $trimmed) === 1) {
+            return $recordTime->getTimezone()->getName() === 'Z'
+                ? 'UTC'
+                : $recordTime->getTimezone()->getName();
+        }
+
+        return 'UTC';
     }
 }

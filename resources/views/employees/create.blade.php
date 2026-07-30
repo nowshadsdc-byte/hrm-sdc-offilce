@@ -152,6 +152,9 @@
             </div>
         </div>
 
+        @include('employees.partials.shift-schedule', ['shifts' => $shifts, 'selectedShiftId' => null])
+        @include('employees.partials.leave-allocation', ['isAdmin' => $isAdmin, 'selectedAnnualLeaveDays' => null, 'defaultAnnualLeaveDays' => $defaultAnnualLeaveDays])
+
         <div class="card-footer" style="display: flex; gap: 0.75rem;">
             <button type="submit" class="btn btn-primary">Create Employee</button>
             <a href="{{ route('employees.index') }}" class="btn btn-secondary">Cancel</a>

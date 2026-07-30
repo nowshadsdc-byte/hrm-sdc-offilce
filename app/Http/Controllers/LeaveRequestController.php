@@ -33,7 +33,18 @@ class LeaveRequestController extends Controller
         $employees = Employee::all();
         $leaveTypes = ['Casual Leave', 'Sick Leave', 'Annual Leave', 'Maternity Leave', 'Paternity Leave'];
 
-        return view('dashboard.leave-requests', compact('leaveRequests', 'stats', 'tab', 'employees', 'leaveTypes'));
+        $employeeLeaveBalances = $employees->mapWithKeys(
+            fn (Employee $employee) => [$employee->id => $employee->leaveBalance()]
+        );
+
+        $user = $request->user();
+        $isAdmin = $user !== null
+            && method_exists($user, 'hasAnyRole')
+            && $user->hasAnyRole(config('tyro-dashboard.admin_roles', ['admin', 'super-admin']));
+
+        return view('dashboard.leave-requests', compact(
+            'leaveRequests', 'stats', 'tab', 'employees', 'leaveTypes', 'employeeLeaveBalances', 'isAdmin'
+        ));
     }
 
     public function store(Request $request)

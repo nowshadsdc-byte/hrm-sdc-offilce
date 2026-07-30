@@ -26,9 +26,26 @@ class AttendanceSettingsController extends Controller
                 'backup_frequency' => $settings->backup_frequency ?? 'weekly',
                 'backup_path' => $settings->backup_path ?? 'storage/app/backups',
                 'last_backup_at' => optional($settings->last_backup_at)?->toDateTimeString(),
+                'default_annual_leave_days' => $settings->default_annual_leave_days ?? 20,
             ],
             'shifts' => Shift::all(),
         ]);
+    }
+
+    /**
+     * Update the organization-wide default annual leave allocation.
+     * Employees without a personal override use this number.
+     */
+    public function updateLeavePolicy(Request $request)
+    {
+        $validated = $request->validate([
+            'default_annual_leave_days' => ['required', 'integer', 'min:0', 'max:365'],
+        ]);
+
+        $settings = AttendanceSettings::current();
+        $settings->update($validated);
+
+        return back()->with('success', 'Leave policy updated successfully.');
     }
 
     /**

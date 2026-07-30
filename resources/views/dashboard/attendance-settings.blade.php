@@ -25,6 +25,7 @@
             $tabs = [
                 'general'                  => ['label' => 'General',                  'icon' => '<path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1.2 1.2 0 0 1 0 1.6l-1.2 1.2a1.2 1.2 0 0 1-1.6 0l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a1.2 1.2 0 0 1-1.2 1.2h-1.7A1.2 1.2 0 0 1 11 20v-.2a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.1.1a1.2 1.2 0 0 1-1.6 0l-1.2-1.2a1.2 1.2 0 0 1 0-1.6l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H4a1.2 1.2 0 0 1-1.2-1.2v-1.7A1.2 1.2 0 0 1 4 10h.2a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.1-.1a1.2 1.2 0 0 1 0-1.6l1.2-1.2a1.2 1.2 0 0 1 1.6 0l.1.1a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V4A1.2 1.2 0 0 1 11 2.8h1.7A1.2 1.2 0 0 1 14 4v.2a1 1 0 0 0 .6.9 1 1 0 0 0 1.1-.2l.1-.1a1.2 1.2 0 0 1 1.6 0l1.2 1.2a1.2 1.2 0 0 1 0 1.6l-.1.1a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6h.2a1.2 1.2 0 0 1 1.2 1.2v1.7a1.2 1.2 0 0 1-1.2 1.2h-.2a1 1 0 0 0-.9.6Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'],
                 'shifts-and-schedule'      => ['label' => 'Shifts & Schedule',        'icon' => '<circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'],
+                'leave-policy'             => ['label' => 'Leave Policy',             'icon' => '<path d="M7 13c2 0 2-2 4-2s2 2 4 2 2-2 4-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4 18c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 8c1.5-2.5 5-3.5 7-1 2-2.5 5.5-1.5 7 1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'],
                 'holiday-calendar'         => ['label' => 'Holiday Calendar',          'icon' => '<rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 3v4M16 3v4M4 10h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'],
                 'audit-logs'               => ['label' => 'Audit Logs',               'icon' => '<path d="M6 5h12M6 10h12M6 15h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="17" cy="15" r="2.5" stroke="currentColor" stroke-width="1.8"/>'],
                 'notification-preferences' => ['label' => 'Notification Preferences', 'icon' => '<path d="M12 4a4 4 0 0 0-4 4v2.1c0 .8-.3 1.5-.8 2.1L6 14h12l-1.2-1.8a3.6 3.6 0 0 1-.8-2.1V8a4 4 0 0 0-4-4Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 17a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'],
@@ -291,6 +292,39 @@
             </div>
         </form>
     </div>
+</div>
+@endif
+
+{{-- ======================= LEAVE POLICY TAB ======================= --}}
+@if($activeTab === 'leave-policy')
+<div class="card">
+    <form action="{{ route('attendance-settings.leave-policy') }}" method="POST">
+        @csrf
+        @method('PUT')
+        <div class="card-header">
+            <h3 class="card-title">Leave Policy</h3>
+            <p class="muted-text">Set the default number of annual leave days every employee is granted. Admins can override this per employee from their profile.</p>
+        </div>
+        <div class="card-body">
+            <div class="form-group" style="max-width: 20rem;">
+                <label for="default_annual_leave_days" class="form-label">Default Annual Leave Days (per employee)</label>
+                <input type="number"
+                       id="default_annual_leave_days"
+                       name="default_annual_leave_days"
+                       min="0"
+                       max="365"
+                       class="form-input @error('default_annual_leave_days') is-invalid @enderror"
+                       value="{{ old('default_annual_leave_days', $settings['default_annual_leave_days']) }}">
+                @error('default_annual_leave_days')
+                    <span class="form-error">{{ $message }}</span>
+                @enderror
+                <p class="muted-text" style="font-size: 0.8125rem; margin-top: 0.5rem;">Applies to every employee unless a custom allocation is set on their profile.</p>
+            </div>
+        </div>
+        <div class="card-footer" style="display: flex; justify-content: flex-end;">
+            <button type="submit" class="btn btn-primary">Save Leave Policy</button>
+        </div>
+    </form>
 </div>
 @endif
 

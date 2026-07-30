@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs -I{} basename {})",
+      "Bash(xargs cat)",
+      "Bash(vendor/bin/pest tests/Feature/AttendancesControllerTest.php)",
+      "Bash(vendor/bin/pest tests/Feature/AttendancesControllerTest.php --colors=never)",
+      "Bash(git stash *)",
+      "Bash(php -l app/Http/Controllers/EmployeeController.php)",
+      "Bash(php -l app/Http/Controllers/LeaveRequestController.php)",
+      "Bash(php -l app/Http/Controllers/AttendanceSettingsController.php)",
+      "Bash(php -l app/Models/Employee.php)",
+      "Bash(php -l app/Models/AttendanceSettings.php)"
+    ]
+  }
+}

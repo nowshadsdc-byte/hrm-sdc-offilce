@@ -6,6 +6,7 @@ use App\Models\Attendance;
 use App\Models\AttendanceSettings;
 use App\Models\Employee;
 use App\Models\RawDeviceData;
+use App\Models\Shift;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
@@ -16,13 +17,22 @@ class AttendanceSyncService
      */
     public function syncForDate(Carbon $selectedDate): array
     {
-        $date = $selectedDate->copy()->startOfDay();
-        $dateString = $date->toDateString();
-        $isHistoricalDate = $date->lt(now()->startOfDay());
+        $dateString = $selectedDate->toDateString();
+
+        // Raw punch timestamps are stored as-is with no timezone conversion (see
+        // resolvePunchDateTime()/resolveScheduleThresholds()), so the grouping
+        // window must be plain calendar-day boundaries for that same date string
+        // rather than a timezone-shifted range - otherwise evening punches get
+        // bucketed into the wrong day and compared against the wrong threshold.
+        $rangeStart = $dateString.' 00:00:00';
+        $rangeEnd = $dateString.' 23:59:59';
 
         $rawGroups = RawDeviceData::query()
-            ->where(function ($query) use ($dateString) {
-                $query->whereDate('recordTime', $dateString)
+            ->where(function ($query) use ($rangeStart, $rangeEnd, $dateString) {
+                $query->whereBetween('recordTime', [
+                    $rangeStart,
+                    $rangeEnd,
+                ])
                     ->orWhere(function ($nested) use ($dateString) {
                         $nested->whereNull('recordTime')
                             ->whereDate('date', $dateString);
@@ -45,9 +55,9 @@ class AttendanceSyncService
         }
 
         $employeeByDeviceUserId = Employee::query()
-            ->select(['id', 'user_id', 'name', 'device_user_id'])
+            ->select(['id', 'user_id', 'name', 'device_user_id', 'shift_id'])
             ->whereIn('device_user_id', $rawGroups->keys()->all(), 'and', false)
-            ->with(['user:id,name'])
+            ->with(['user:id,name', 'shift:id,name,start_time,end_time'])
             ->get()
             ->keyBy(fn (Employee $employee): string => (string) $employee->device_user_id);
 
@@ -71,7 +81,7 @@ class AttendanceSyncService
                 return $latestAttendance;
             });
 
-        $schedule = $this->resolveScheduleThresholds($dateString);
+        $defaultShift = Shift::default();
 
         $created = 0;
         $updated = 0;
@@ -87,7 +97,6 @@ class AttendanceSyncService
                 ->map(fn (RawDeviceData $rawData): Carbon => $this->resolvePunchDateTime($rawData))
                 ->sort()
                 ->values();
-            $punchCount = $orderedPunches->count();
 
             if ($orderedPunches->isEmpty()) {
                 continue;
@@ -96,39 +105,35 @@ class AttendanceSyncService
             $employee = $employeeByDeviceUserId->get($normalizedDeviceUserId);
             $existingAttendance = $existingByDeviceUserId->get($normalizedDeviceUserId);
 
-            $checkIn = $orderedPunches->get(0);
-            $lunchStart = $orderedPunches->get(1);
-            $lunchEnd = $orderedPunches->get(2);
-            $checkOut = $orderedPunches->get(3);
-
-            if ($isHistoricalDate && $punchCount === 2) {
-                $lunchStart = null;
-                $lunchEnd = null;
-                $checkOut = $orderedPunches->get(1);
-            }
+            // Punches between 9:00-12:59 count as check-in (earliest wins); punches
+            // between 13:00-23:59 count as check-out (latest wins). No lunch tracking.
+            $checkIn = $orderedPunches->first(fn (Carbon $punch): bool => $punch->hour >= 9 && $punch->hour < 13);
+            $checkOut = $orderedPunches->last(fn (Carbon $punch): bool => $punch->hour >= 13);
 
             $lastPunch = $orderedPunches->last();
 
-            $lunchDurationMinutes = $this->calculateMinutes($lunchStart, $lunchEnd);
             $totalWorkMinutes = $this->calculateMinutes($checkIn, $checkOut);
             $overtimeMinutes = $totalWorkMinutes !== null ? max($totalWorkMinutes - 480, 0) : null;
 
+            $schedule = $this->resolveScheduleThresholds($dateString, $employee?->shift ?? $defaultShift);
             $lateThreshold = $schedule['late_threshold'];
             $officeEndStart = $schedule['office_end_start'];
 
             $isLate = $checkIn !== null && $checkIn->gt($lateThreshold);
-            $lateDurationMinutes = $checkIn !== null && $checkIn->gt($lateThreshold)
-                ? $lateThreshold->diffInMinutes($checkIn)
+            $lateDurationMinutes = $isLate
+                ? (int) $lateThreshold->diffInMinutes($checkIn)
                 : 0;
-            $earlyDepartureMinutes = $checkOut !== null && $checkOut->lt($officeEndStart)
-                ? $checkOut->diffInMinutes($officeEndStart)
+
+            $isEarlyLeave = $checkOut !== null && $checkOut->lt($officeEndStart);
+            $earlyLeaveMinutes = $isEarlyLeave
+                ? (int) $checkOut->diffInMinutes($officeEndStart)
                 : 0;
 
             $remarks = $this->buildRemarks(
                 totalWorkMinutes: $totalWorkMinutes,
                 overtimeMinutes: $overtimeMinutes,
                 lateDurationMinutes: $lateDurationMinutes,
-                earlyDepartureMinutes: $earlyDepartureMinutes,
+                earlyLeaveMinutes: $earlyLeaveMinutes,
             );
 
             $signature = sha1(implode('|', $orderedPunches->map(fn (Carbon $punch): string => $punch->format('Y-m-d H:i:s'))->all()));
@@ -146,21 +151,21 @@ class AttendanceSyncService
                 'device_user_id' => $normalizedDeviceUserId,
                 'employee_name' => $employee?->user?->name ?? $employee?->name ?? (string) ($records->first()->employeeName ?? 'Unknown'),
                 'check_in' => $checkIn?->format('Y-m-d H:i:s'),
-                'lunch_start' => $lunchStart?->format('Y-m-d H:i:s'),
-                'lunch_end' => $lunchEnd?->format('Y-m-d H:i:s'),
+                'lunch_start' => null,
+                'lunch_end' => null,
                 'check_out' => $checkOut?->format('Y-m-d H:i:s'),
-                'lunch_duration_minutes' => $lunchDurationMinutes,
+                'lunch_duration_minutes' => null,
                 'total_work_minutes' => $totalWorkMinutes,
                 'overtime_minutes' => $overtimeMinutes,
                 'late_status' => $isLate,
                 'late_duration_minutes' => $lateDurationMinutes,
+                'early_leave_status' => $isEarlyLeave,
+                'early_leave_minutes' => $earlyLeaveMinutes,
                 'remarks' => $remarks,
                 'record_time' => $lastPunch?->format('Y-m-d H:i:s'),
                 'record_date' => $dateString,
                 'record_time_only' => $lastPunch?->format('H:i:s'),
-                'last_raw_punch_at' => $lastPunch?->format('Y-m-d H:i:s'),
-                'raw_punch_signature' => $signature,
-                'last_synced_at' => now(),
+                'timezone' => $records->first()->timeZone ?? 'UTC',
             ];
 
             if ($existingAttendance !== null) {
@@ -184,10 +189,26 @@ class AttendanceSyncService
     }
 
     /**
+     * Resolve the late/early-leave thresholds for a date, based on the employee's
+     * assigned shift. Falls back to the global attendance settings when no shift
+     * is available (e.g. the shifts table is empty).
+     *
+     * Thresholds are parsed as UTC to match resolvePunchDateTime(), which reads
+     * raw device punches as-is with no timezone conversion. Parsing with the
+     * app's default timezone (e.g. Asia/Dhaka) here would shift the threshold
+     * by the UTC offset and make on-time check-ins register as late.
+     *
      * @return array{late_threshold:Carbon,office_end_start:Carbon}
      */
-    protected function resolveScheduleThresholds(string $dateString): array
+    protected function resolveScheduleThresholds(string $dateString, ?Shift $shift = null): array
     {
+        if ($shift !== null) {
+            return [
+                'late_threshold' => Carbon::parse($dateString.' '.$shift->start_time, 'UTC'),
+                'office_end_start' => Carbon::parse($dateString.' '.$shift->end_time, 'UTC'),
+            ];
+        }
+
         $settings = AttendanceSettings::current();
 
         $lateThreshold = config('attendance.schedule.office_start_late_threshold', '10:30:00');
@@ -198,12 +219,12 @@ class AttendanceSyncService
         }
 
         return [
-            'late_threshold' => Carbon::parse($dateString.' '.$lateThreshold),
-            'office_end_start' => Carbon::parse($dateString.' '.$officeEndStart),
+            'late_threshold' => Carbon::parse($dateString.' '.$lateThreshold, 'UTC'),
+            'office_end_start' => Carbon::parse($dateString.' '.$officeEndStart, 'UTC'),
         ];
     }
 
-    protected function buildRemarks(?int $totalWorkMinutes, ?int $overtimeMinutes, int $lateDurationMinutes, int $earlyDepartureMinutes): string
+    protected function buildRemarks(?int $totalWorkMinutes, ?int $overtimeMinutes, int $lateDurationMinutes, int $earlyLeaveMinutes): string
     {
         if ($totalWorkMinutes === null) {
             return 'Insufficient punch data';
@@ -215,8 +236,8 @@ class AttendanceSyncService
             $remarks[] = 'Late by '.$this->humanizeMinutes($lateDurationMinutes);
         }
 
-        if ($earlyDepartureMinutes > 0) {
-            $remarks[] = 'Early departure by '.$this->humanizeMinutes($earlyDepartureMinutes);
+        if ($earlyLeaveMinutes > 0) {
+            $remarks[] = 'Early leave by '.$this->humanizeMinutes($earlyLeaveMinutes);
         }
 
         if (($overtimeMinutes ?? 0) > 0) {
@@ -254,11 +275,13 @@ class AttendanceSyncService
 
     protected function resolvePunchDateTime(RawDeviceData $rawData): Carbon
     {
+        // No timezone conversion: the hour of the raw punch is used as-is to
+        // classify check-in (9-12) vs check-out (13-24).
         if ($rawData->recordTime !== null) {
-            return Carbon::parse($rawData->recordTime);
+            return Carbon::parse($rawData->recordTime, 'UTC');
         }
 
-        return Carbon::parse($rawData->date.' '.$rawData->time);
+        return Carbon::parse($rawData->date.' '.$rawData->time, 'UTC');
     }
 
     protected function calculateMinutes(?Carbon $start, ?Carbon $end): ?int
@@ -271,6 +294,6 @@ class AttendanceSyncService
             return 0;
         }
 
-        return $start->diffInMinutes($end);
+        return (int) $start->diffInMinutes($end);
     }
 }

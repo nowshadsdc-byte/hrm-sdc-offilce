@@ -165,28 +165,32 @@
 
                     {{-- Actions --}}
                     <div style="display: flex; flex-direction: column; gap: 0.5rem; min-width: 120px;">
-                        @if($request->status === 'pending')
-                            <button type="button" class="btn btn-success btn-sm" onclick="openApproveModal({{ $request->id }})">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 0.875rem; height: 0.875rem;">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                                Approve
-                            </button>
-                            <button type="button" class="btn btn-danger btn-sm" onclick="openRejectModal({{ $request->id }})">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 0.875rem; height: 0.875rem;">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
-                                Reject
-                            </button>
+                        @if($isAdmin)
+                            @if($request->status === 'pending')
+                                <button type="button" class="btn btn-success btn-sm" onclick="openApproveModal({{ $request->id }})">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 0.875rem; height: 0.875rem;">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    Approve
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="openRejectModal({{ $request->id }})">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 0.875rem; height: 0.875rem;">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                    Reject
+                                </button>
+                            @else
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="confirmDelete({{ $request->id }})" style="opacity: 0.6;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 0.875rem; height: 0.875rem;">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                    Delete
+                                </button>
+                            @endif
                         @else
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="confirmDelete({{ $request->id }})" style="opacity: 0.6;">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 0.875rem; height: 0.875rem;">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                </svg>
-                                Delete
-                            </button>
+                            <span class="muted-text" style="font-size: 0.8125rem; text-align: right;">Admin only</span>
                         @endif
                     </div>
                 </div>
@@ -214,12 +218,33 @@
             @csrf
             <div class="form-group">
                 <label for="leaveEmployee" class="form-label">Employee</label>
-                <select id="leaveEmployee" name="employee_id" class="form-input" required>
+                <select id="leaveEmployee" name="employee_id" class="form-input" required data-leave-employee-select>
                     <option value="">Select employee</option>
                     @foreach($employees as $employee)
                         <option value="{{ $employee->id }}">{{ $employee->name }}</option>
                     @endforeach
                 </select>
+            </div>
+
+            <div id="leaveBalanceInfo" style="display: none; margin: -0.5rem 0 1rem; padding: 0.75rem 1rem; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 0.5rem; font-size: 0.8125rem; color: #0c4a6e;">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; text-align: center;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 1.1rem;" data-leave-balance-total>0</div>
+                        <div style="text-transform: uppercase; font-size: 0.7rem; opacity: 0.8;">Total</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; font-size: 1.1rem;" data-leave-balance-approved>0</div>
+                        <div style="text-transform: uppercase; font-size: 0.7rem; opacity: 0.8;">Used</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; font-size: 1.1rem;" data-leave-balance-pending>0</div>
+                        <div style="text-transform: uppercase; font-size: 0.7rem; opacity: 0.8;">Pending</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; font-size: 1.1rem;" data-leave-balance-available>0</div>
+                        <div style="text-transform: uppercase; font-size: 0.7rem; opacity: 0.8;">Available</div>
+                    </div>
+                </div>
             </div>
 
             <div class="form-group">
@@ -332,15 +357,45 @@
 
 @push('scripts')
 <script>
-    function openApplyLeaveModal() {
+    var employeeLeaveBalances = @json($employeeLeaveBalances);
+
+    function openApplyLeaveModal(employeeId) {
         document.getElementById('applyLeaveModal').style.display = 'flex';
+
+        if (employeeId) {
+            document.getElementById('leaveEmployee').value = employeeId;
+            updateLeaveBalanceInfo(employeeId);
+        }
+
         document.getElementById('leaveEmployee').focus();
     }
 
     function closeApplyLeaveModal() {
         document.getElementById('applyLeaveModal').style.display = 'none';
         document.getElementById('applyLeaveForm').reset();
+        document.getElementById('leaveBalanceInfo').style.display = 'none';
     }
+
+    function updateLeaveBalanceInfo(employeeId) {
+        var info = document.getElementById('leaveBalanceInfo');
+        var balance = employeeLeaveBalances[employeeId];
+
+        if (!balance) {
+            info.style.display = 'none';
+
+            return;
+        }
+
+        document.querySelector('[data-leave-balance-total]').textContent = balance.total;
+        document.querySelector('[data-leave-balance-approved]').textContent = balance.approved;
+        document.querySelector('[data-leave-balance-pending]').textContent = balance.pending;
+        document.querySelector('[data-leave-balance-available]').textContent = balance.available;
+        info.style.display = 'block';
+    }
+
+    document.querySelector('[data-leave-employee-select]').addEventListener('change', function (event) {
+        updateLeaveBalanceInfo(event.target.value);
+    });
 
     function openApproveModal(leaveRequestId) {
         const form = document.getElementById('approveForm');
