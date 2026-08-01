@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
 
+Route::get('/test', function () {
+    return "reademployees";
+})->middleware(['auth','readonly.action']);
+
 Route::resource('employees', EmployeeController::class);
 Route::post('/employees/{employee}/sync-attendance', [EmployeeController::class, 'syncAttendance'])->name('employees.sync-attendance');
 
@@ -70,3 +74,15 @@ Route::delete('dashboard/devices/{device}', [DeviceController::class, 'destroy']
 
 Route::get('dashboard/attendancereport', [AttendanceReportController::class, 'index'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendancereport');
 Route::get('dashboard/attendancereport/export', [AttendanceReportController::class, 'export'])->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.attendancereport.export');
+
+Route::get('dashboard/myattendances', [EmployeeController::class, 'myAttendances'])
+    ->middleware(['auth'])
+    ->name('dashboard.myattendances');
+
+Route::get('dashboard/myleaverequests', [LeaveRequestController::class, 'myRequests'])
+    ->middleware(['auth'])
+    ->name('dashboard.myleaverequests');
+
+Route::post('dashboard/myleaverequests', [LeaveRequestController::class, 'storeForSelf'])
+    ->middleware(['auth'])
+    ->name('dashboard.myleaverequests.store');

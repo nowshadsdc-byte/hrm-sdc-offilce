@@ -26,6 +26,9 @@
 @endphp
 
 @section('content')
+@php
+    $linkedinAccount = $employee->user ? $employee->user->socialAccounts->firstWhere('provider', 'linkedin') : null;
+@endphp
 <div class="page-header">
     <div class="page-header-row">
         <div>
@@ -78,6 +81,39 @@
                 <h3 class="detail-label">Role</h3>
                 <p>{{ $employee->role ?? '—' }}</p>
             </div>
+            <div>
+                <h3 class="detail-label">Linked User</h3>
+                <p>{{ $employee->user?->name ?? 'No linked user account' }}</p>
+            </div>
+            <div>
+                <h3 class="detail-label">Email Address</h3>
+                <p>{{ $employee->user?->email ?? '—' }}</p>
+            </div>
+            <div>
+                <h3 class="detail-label">Account Status</h3>
+                <p>
+                    @if ($employee->user)
+                        @if ($employee->user->email_verified_at)
+                            Verified
+                        @else
+                            Unverified
+                        @endif
+                    @else
+                        No linked user account
+                    @endif
+                </p>
+            </div>
+            @if ($linkedinAccount)
+                <div>
+                    <h3 class="detail-label">LinkedIn Status</h3>
+                    <p>
+                        {{ $employee->user->name }} is linked via LinkedIn
+                        @if ($linkedinAccount->provider_email)
+                            — {{ $linkedinAccount->provider_email }}
+                        @endif
+                    </p>
+                </div>
+            @endif
             <div>
                 <h3 class="detail-label">Shift</h3>
                 <p>{{ $employee->shift?->name ?? '—' }}{{ $employee->shift ? ' ('.$employee->shift->formattedRange().')' : '' }}</p>

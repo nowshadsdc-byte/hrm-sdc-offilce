@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureAttendanceSettingsAccess;
 use App\Http\Middleware\EnsureHolidayCalendarAccess;
+use App\Http\Middleware\EnsureReadonlyActionAccess;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -25,6 +26,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'attendance-settings.access' => EnsureAttendanceSettingsAccess::class,
             'holiday-calendar.access' => EnsureHolidayCalendarAccess::class,
+            'readonly.action' => EnsureReadonlyActionAccess::class,
+            'users.manage' => \App\Http\Middleware\EnsureUsersManageAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

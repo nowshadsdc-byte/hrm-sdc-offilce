@@ -86,6 +86,9 @@ it('returns a rendered panel as json for ajax requests instead of reloading the 
 
     expect($response->headers->get('Content-Type'))->toContain('application/json');
     expect($payload['date'])->toBe('2026-07-30');
+    expect($payload['prevDate'])->toBe('2026-07-29');
+    expect($payload['nextDate'])->toBe('2026-07-31');
+    expect($payload['isToday'])->toBeFalse();
     expect($payload['syncResult']['message'])->toBe('Data updated: 1 created, 0 updated, 0 unchanged from 1 employee records.');
     expect($payload['html'])->toContain('Daily Punches');
 });

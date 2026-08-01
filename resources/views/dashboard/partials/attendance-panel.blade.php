@@ -1,8 +1,4 @@
 @php
-    $currentDate = \Carbon\Carbon::parse($date);
-    $prevDate = $currentDate->copy()->subDay()->toDateString();
-    $nextDate = $currentDate->copy()->addDay()->toDateString();
-    $isToday = $currentDate->isToday();
     $formatAttendanceTime = function ($value) {
         if ($value === null) {
             return null;
@@ -50,29 +46,7 @@
     </div>
 </div>
 
-<div class="card" style="margin-top: 1rem; margin-bottom: 1rem;">
-    <div class="card-body" style="padding-top: 1rem; padding-bottom: 1rem;">
-        <form method="GET" action="{{ route('attendances.index') }}" data-attendance-filter-form style="display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap;">
-            <a href="{{ route('attendances.index', ['date' => $prevDate]) }}" data-attendance-date-link class="btn btn-secondary" title="Previous day">&larr;</a>
-
-            <div class="form-group" style="margin: 0;">
-                <label for="attendance-date" class="form-label">Date</label>
-                <input id="attendance-date" type="date" name="date" value="{{ $date }}" data-attendance-date-input class="form-input border border-gray-300 rounded-md px-3 py-2">
-            </div>
-
-            <a href="{{ route('attendances.index', ['date' => $nextDate]) }}" data-attendance-date-link class="btn btn-secondary {{ $isToday ? 'pointer-events-none opacity-50' : '' }}" title="Next day">&rarr;</a>
-
-            @unless ($isToday)
-                <a href="{{ route('attendances.index') }}" data-attendance-date-link class="btn btn-secondary">Today</a>
-            @endunless
-
-            <button type="submit" class="btn btn-secondary">View</button>
-            <button type="submit" name="sync" value="1" class="bg-blue-500 text-white px-4 py-2 rounded-md">Sync Data</button>
-        </form>
-    </div>
-</div>
-
-<div class="card" style="border-radius: 0.75rem; background: #ffffff; border: 1px solid var(--border);">
+<div class="card" style="border-radius: 0.75rem; background: #ffffff; border: 1px solid var(--border); margin-top: 1rem;">
     <div class="card-header">
         <h3 class="card-title">Daily Punches</h3>
     </div>

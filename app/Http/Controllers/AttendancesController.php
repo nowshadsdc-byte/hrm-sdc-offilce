@@ -41,11 +41,15 @@ class AttendancesController extends Controller
 
         $stats = $this->buildAttendanceStats($attendances);
         $isAdmin = $this->userIsAdmin($request);
+        $currentDate = Carbon::parse($dateString);
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'date' => $dateString,
-                'dateLabel' => Carbon::parse($dateString)->format('l, F j, Y'),
+                'dateLabel' => $currentDate->format('l, F j, Y'),
+                'prevDate' => $currentDate->copy()->subDay()->toDateString(),
+                'nextDate' => $currentDate->copy()->addDay()->toDateString(),
+                'isToday' => $currentDate->isToday(),
                 'syncResult' => $syncResult,
                 'html' => view('dashboard.partials.attendance-panel', [
                     'date' => $dateString,
@@ -63,6 +67,7 @@ class AttendancesController extends Controller
             'syncResult' => $syncResult,
             'stats' => $stats,
             'isAdmin' => $isAdmin,
+            'devices' => $isAdmin ? Device::all() : collect(),
         ]);
     }
 

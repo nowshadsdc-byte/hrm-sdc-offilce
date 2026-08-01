@@ -1,0 +1,510 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "name": "AttendPro HRM Styling Guideline",
+  "version": "1.0.0",
+  "description": "Complete styling specification for the AttendPro HRM Attendance Management System. Emerald/teal primary palette, dark-mode-first, built on Tailwind CSS 4 + shadcn/ui.",
+  "designPhilosophy": {
+    "summary": "Modern, professional HR dashboard with a calming emerald/teal primary, generous whitespace, semantic color tokens, and full dark mode support. Optimized for data-density without visual clutter.",
+    "principles": [
+      "Semantic color tokens (bg-card, text-foreground) for automatic dark mode",
+      "Emerald/teal as primary — no indigo/blue",
+      "Status colors are consistent across all modules",
+      "Mobile-first responsive with progressive enhancement",
+      "Sticky footer always pinned to viewport bottom",
+      "Accessible contrast ratios (WCAG AA)",
+      "Subtle motion (hover lifts, transitions under 300ms)"
+    ]
+  },
+  "colorSystem": {
+    "format": "OKLCH (Tailwind CSS 4 native)",
+    "radius": "0.625rem (10px) base",
+    "primary": "Emerald / Teal",
+    "themes": {
+      "light": {
+        "background": "oklch(0.99 0.005 165)",
+        "foreground": "oklch(0.18 0.02 170)",
+        "card": "oklch(1 0 0)",
+        "cardForeground": "oklch(0.18 0.02 170)",
+        "popover": "oklch(1 0 0)",
+        "popoverForeground": "oklch(0.18 0.02 170)",
+        "primary": "oklch(0.52 0.13 165)",
+        "primaryForeground": "oklch(0.99 0.005 165)",
+        "secondary": "oklch(0.96 0.012 165)",
+        "secondaryForeground": "oklch(0.25 0.03 165)",
+        "muted": "oklch(0.965 0.006 165)",
+        "mutedForeground": "oklch(0.5 0.02 170)",
+        "accent": "oklch(0.94 0.025 165)",
+        "accentForeground": "oklch(0.25 0.03 165)",
+        "destructive": "oklch(0.58 0.22 27)",
+        "border": "oklch(0.91 0.008 165)",
+        "input": "oklch(0.91 0.008 165)",
+        "ring": "oklch(0.52 0.13 165)",
+        "sidebar": "oklch(0.98 0.008 165)",
+        "sidebarForeground": "oklch(0.2 0.02 170)",
+        "sidebarPrimary": "oklch(0.52 0.13 165)",
+        "sidebarAccent": "oklch(0.94 0.02 165)"
+      },
+      "dark": {
+        "background": "oklch(0.16 0.012 170)",
+        "foreground": "oklch(0.97 0.005 165)",
+        "card": "oklch(0.21 0.015 170)",
+        "cardForeground": "oklch(0.97 0.005 165)",
+        "popover": "oklch(0.21 0.015 170)",
+        "popoverForeground": "oklch(0.97 0.005 165)",
+        "primary": "oklch(0.7 0.14 165)",
+        "primaryForeground": "oklch(0.16 0.012 170)",
+        "secondary": "oklch(0.27 0.018 170)",
+        "secondaryForeground": "oklch(0.97 0.005 165)",
+        "muted": "oklch(0.27 0.018 170)",
+        "mutedForeground": "oklch(0.7 0.015 165)",
+        "accent": "oklch(0.3 0.025 165)",
+        "accentForeground": "oklch(0.97 0.005 165)",
+        "destructive": "oklch(0.7 0.19 22)",
+        "border": "oklch(1 0 0 / 10%)",
+        "input": "oklch(1 0 0 / 15%)",
+        "ring": "oklch(0.7 0.14 165)",
+        "sidebar": "oklch(0.19 0.013 170)",
+        "sidebarForeground": "oklch(0.97 0.005 165)",
+        "sidebarPrimary": "oklch(0.7 0.14 165)",
+        "sidebarAccent": "oklch(0.3 0.025 165)"
+      }
+    },
+    "statusColors": {
+      "present": {
+        "label": "Present",
+        "hex": "#10b981",
+        "usage": "On-time attendance, online devices, success states",
+        "badgeLight": "bg-emerald-100 text-emerald-700 border-emerald-200",
+        "badgeDark": "dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800",
+        "dot": "bg-emerald-500"
+      },
+      "absent": {
+        "label": "Absent",
+        "hex": "#ef4444",
+        "usage": "No-show, missing checkout, errors, destructive actions",
+        "badgeLight": "bg-red-100 text-red-700 border-red-200",
+        "badgeDark": "dark:bg-red-900/40 dark:text-red-400 dark:border-red-800",
+        "dot": "bg-red-500"
+      },
+      "late": {
+        "label": "Late",
+        "hex": "#f59e0b",
+        "usage": "Late arrivals, warnings, partial syncs",
+        "badgeLight": "bg-amber-100 text-amber-700 border-amber-200",
+        "badgeDark": "dark:bg-amber-900/40 dark:text-amber-400 dark:border-amber-800",
+        "dot": "bg-amber-500"
+      },
+      "halfDay": {
+        "label": "Half Day",
+        "hex": "#8b5cf6",
+        "usage": "Half-day attendance",
+        "badgeLight": "bg-violet-100 text-violet-700 border-violet-200",
+        "badgeDark": "dark:bg-violet-900/40 dark:text-violet-400 dark:border-violet-800",
+        "dot": "bg-violet-500"
+      },
+      "leave": {
+        "label": "On Leave",
+        "hex": "#3b82f6",
+        "usage": "Approved/active leaves",
+        "badgeLight": "bg-sky-100 text-sky-700 border-sky-200",
+        "badgeDark": "dark:bg-sky-900/40 dark:text-sky-400 dark:border-sky-800",
+        "dot": "bg-sky-500"
+      },
+      "holiday": {
+        "label": "Holiday",
+        "hex": "#ec4899",
+        "usage": "Public/company holidays",
+        "badgeLight": "bg-pink-100 text-pink-700 border-pink-200",
+        "badgeDark": "dark:bg-pink-900/40 dark:text-pink-400 dark:border-pink-800",
+        "dot": "bg-pink-500"
+      }
+    },
+    "deviceStatusColors": {
+      "online": {
+        "label": "Online",
+        "hex": "#10b981",
+        "dot": "bg-emerald-500",
+        "badge": "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
+        "animation": "animate-ping (pulsing dot)"
+      },
+      "offline": {
+        "label": "Offline",
+        "hex": "#71717a",
+        "dot": "bg-zinc-400",
+        "badge": "bg-zinc-100 text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700"
+      },
+      "error": {
+        "label": "Error",
+        "hex": "#ef4444",
+        "dot": "bg-red-500",
+        "badge": "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400 border-red-200 dark:border-red-800"
+      }
+    },
+    "roleBadgeColors": {
+      "Super Admin": "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-400",
+      "HR Manager": "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
+      "Admin": "bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400",
+      "Department Manager": "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
+      "Employee": "bg-zinc-100 text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400"
+    },
+    "chartPalette": {
+      "chart1": "oklch(0.52 0.13 165) — emerald (primary data)",
+      "chart2": "oklch(0.6 0.12 200) — teal/cyan (secondary)",
+      "chart3": "oklch(0.72 0.15 85) — amber/gold (tertiary)",
+      "chart4": "oklch(0.6 0.2 25) — red-orange (warning/quaternary)",
+      "chart5": "oklch(0.55 0.16 300) — violet (quinary)",
+      "hexValues": {
+        "emerald": "#10b981",
+        "teal": "#14b8a6",
+        "amber": "#f59e0b",
+        "red": "#ef4444",
+        "violet": "#8b5cf6",
+        "sky": "#3b82f6",
+        "pink": "#ec4899"
+      }
+    },
+    "avatarColors": [
+      "bg-emerald-500",
+      "bg-teal-500",
+      "bg-cyan-500",
+      "bg-sky-500",
+      "bg-violet-500",
+      "bg-fuchsia-500",
+      "bg-pink-500",
+      "bg-rose-500",
+      "bg-amber-500",
+      "bg-orange-500"
+    ]
+  },
+  "typography": {
+    "fontFamilies": {
+      "sans": "var(--font-geist-sans) — Geist Sans (primary UI font)",
+      "mono": "var(--font-geist-mono) — Geist Mono (IDs, codes, serial numbers)"
+    },
+    "scale": {
+      "xs": { "size": "0.75rem (12px)", "lineHeight": "1rem", "weight": 400, "usage": "Labels, badges, captions, timestamps" },
+      "sm": { "size": "0.875rem (14px)", "lineHeight": "1.25rem", "weight": 400, "usage": "Secondary text, table cells, descriptions" },
+      "base": { "size": "1rem (16px)", "lineHeight": "1.5rem", "weight": 400, "usage": "Body text, inputs" },
+      "lg": { "size": "1.125rem (18px)", "lineHeight": "1.75rem", "weight": 500, "usage": "Card titles, section headers" },
+      "xl": { "size": "1.25rem (20px)", "lineHeight": "1.75rem", "weight": 600, "usage": "Page sub-titles" },
+      "2xl": { "size": "1.5rem (24px)", "lineHeight": "2rem", "weight": 700, "usage": "Page titles (h2)" },
+      "3xl": { "size": "1.875rem (30px)", "lineHeight": "2.25rem", "weight": 700, "usage": "KPI numbers" }
+    },
+    "headings": {
+      "h1": "text-xl font-bold tracking-tight (page title in header)",
+      "h2": "text-2xl font-bold tracking-tight (section title in main)",
+      "h3": "text-lg font-semibold (card titles)",
+      "caption": "text-xs text-muted-foreground (descriptions)"
+    },
+    "weights": {
+      "normal": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700
+    },
+    "letterSpacing": {
+      "tight": "tracking-tight (headings)",
+      "normal": "normal (body)",
+      "wide": "tracking-wide (small labels)",
+      "wider": "tracking-wider (uppercase section labels)"
+    }
+  },
+  "spacing": {
+    "unit": "0.25rem (4px) base scale",
+    "scale": {
+      "1": "0.25rem (4px)",
+      "2": "0.5rem (8px)",
+      "3": "0.75rem (12px)",
+      "4": "1rem (16px)",
+      "5": "1.25rem (20px)",
+      "6": "1.5rem (24px)",
+      "8": "2rem (32px)",
+      "10": "2.5rem (40px)",
+      "12": "3rem (48px)",
+      "16": "4rem (64px)"
+    },
+    "pagePadding": {
+      "mobile": "p-4 (16px)",
+      "tablet": "sm:p-6 (24px)",
+      "desktop": "lg:p-8 (32px)"
+    },
+    "cardPadding": {
+      "content": "p-6 (24px) standard, p-4 (16px) compact",
+      "header": "px-6 py-5 with space-y-1.5",
+      "gap": "gap-4 (cards) or gap-6 (sections)"
+    },
+    "maxContentWidth": "max-w-[1600px] mx-auto",
+    "sidebarWidth": "w-72 (18rem / 288px)",
+    "headerHeight": "h-16 (4rem / 64px)"
+  },
+  "borderRadius": {
+    "base": "0.625rem (10px) — --radius",
+    "sm": "calc(var(--radius) - 4px) = 6px",
+    "md": "calc(var(--radius) - 2px) = 8px",
+    "lg": "var(--radius) = 10px",
+    "xl": "calc(var(--radius) + 4px) = 14px",
+    "full": "9999px (avatars, pills, dots)",
+    "usage": {
+      "buttons": "rounded-lg (md)",
+      "cards": "rounded-xl (lg)",
+      "inputs": "rounded-md",
+      "badges": "rounded-full or rounded-md",
+      "avatars": "rounded-full",
+      "icons": "rounded-lg"
+    }
+  },
+  "borders": {
+    "default": "1px solid var(--border)",
+    "light": "border-border",
+    "dashed": "border-dashed (empty states)",
+    "focus": "2px solid var(--ring) with outline-ring/50",
+    "sidebar": "border-r border-sidebar-border"
+  },
+  "shadows": {
+    "none": "shadow-none (default for flat surfaces)",
+    "sm": "shadow-sm (cards, active nav items)",
+    "md": "shadow-md (hovered cards, elevated elements)",
+    "lg": "shadow-lg (dialogs, dropdowns, popovers)",
+    "usage": "Avoid heavy shadows; prefer borders for separation. Add shadow-sm on hover lift."
+  },
+  "effects": {
+    "transitions": {
+      "fast": "transition-colors (150ms) — text, badges",
+      "default": "transition-all duration-200 (200ms) — buttons, cards",
+      "slow": "transition-transform duration-300 (300ms) — sidebar slide"
+    },
+    "hover": {
+      "cardLift": "hover:-translate-y-0.5 hover:shadow-md",
+      "button": "hover:bg-accent hover:text-accent-foreground",
+      "icon": "group-hover:text-sidebar-accent-foreground"
+    },
+    "animations": {
+      "ping": "animate-ping (online status dots, pulsing indicators)",
+      "pulse": "animate-pulse (skeleton loaders, loading states)",
+      "spin": "animate-spin (loading spinners, refresh icons)",
+      "fadeIn": "subtle opacity transitions on mount"
+    },
+    "backdropBlur": "backdrop-blur-md (sticky header, overlays)"
+  },
+  "layout": {
+    "rootStructure": {
+      "wrapper": "min-h-screen bg-background",
+      "contentArea": "lg:pl-72 (offset for fixed sidebar)",
+      "flexColumn": "flex min-h-screen flex-col",
+      "main": "flex-1",
+      "footer": "mt-auto border-t bg-background/60 (sticky to bottom)"
+    },
+    "grids": {
+      "kpiCards": "grid-cols-2 md:grid-cols-3 xl:grid-cols-6",
+      "chartRow": "grid-cols-1 lg:grid-cols-2 gap-4",
+      "deviceCards": "grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4",
+      "filterBar": "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3",
+      "summaryCards": "grid-cols-2 lg:grid-cols-4"
+    },
+    "scrollAreas": {
+      "tableContainer": "max-h-[600px] overflow-y-auto scrollbar-thin",
+      "compactList": "max-h-96 overflow-y-auto scrollbar-thin",
+      "syncLogs": "max-h-80 overflow-y-auto scrollbar-thin",
+      "sidebar": "flex-1 with ScrollArea component"
+    },
+    "tableOverflow": "overflow-x-auto with min-w on table (e.g. min-w-[900px])"
+  },
+  "responsiveBreakpoints": {
+    "mobile": "< 640px (default, mobile-first)",
+    "sm": "≥ 640px (large phones, small tablets)",
+    "md": "≥ 768px (tablets)",
+    "lg": "≥ 1024px (desktop — sidebar becomes persistent, grids expand)",
+    "xl": "≥ 1280px (large desktop — full multi-column layouts)",
+    "strategy": "Mobile-first. Sidebar hidden behind hamburger < lg, persistent ≥ lg. Grids stack on mobile, expand at sm/md/lg/xl."
+  },
+  "components": {
+    "card": {
+      "baseClass": "rounded-xl border border-border bg-card text-card-foreground",
+      "header": "flex flex-row items-center justify-between space-y-0 pb-2 (for KPI) OR px-6 py-5 (for titled cards)",
+      "content": "p-6 pt-0",
+      "kpiVariant": "relative overflow-hidden hover:-translate-y-0.5 hover:shadow-md transition-all"
+    },
+    "button": {
+      "variants": {
+        "default": "bg-primary text-primary-foreground hover:bg-primary/90",
+        "outline": "border border-border bg-background hover:bg-accent",
+        "ghost": "hover:bg-accent hover:text-accent-foreground",
+        "destructive": "bg-destructive text-white hover:bg-destructive/90",
+        "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+      },
+      "sizes": {
+        "icon": "h-10 w-10 rounded-full (header buttons)",
+        "sm": "h-8 px-3 text-xs",
+        "default": "h-10 px-4 py-2",
+        "lg": "h-11 px-8"
+      }
+    },
+    "badge": {
+      "baseClass": "inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-medium",
+      "withDot": "prepend <span class='h-1.5 w-1.5 rounded-full {dotColor}' />"
+    },
+    "input": {
+      "baseClass": "h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
+      "focus": "ring-2 ring-ring ring-offset-2",
+      "withIcon": "pl-9 with absolute-positioned icon at left-3"
+    },
+    "table": {
+      "container": "overflow-x-auto rounded-lg border",
+      "header": "bg-muted/50 h-11 text-xs font-medium uppercase tracking-wider text-muted-foreground",
+      "row": "h-14 border-b hover:bg-muted/30 transition-colors",
+      "cell": "px-4 py-3 text-sm"
+    },
+    "avatar": {
+      "size": "h-9 w-9 (table) or h-10 w-10 (header)",
+      "fallback": "bg-{avatarColor} text-white text-sm font-semibold with getInitials(name)",
+      "border": "border-2 border-border (header profile)"
+    },
+    "statusIndicator": {
+      "onlineDot": "relative flex h-2 w-2 — span.animate-ping (absolute) + span.bg-emerald-500 (relative)"
+    },
+    "kpiCard": {
+      "structure": "Card with CardHeader (icon container + label) and CardContent (big number + context line)",
+      "iconContainer": "flex h-9 w-9 items-center justify-center rounded-lg",
+      "numberSize": "text-3xl font-bold tabular-nums",
+      "contextLine": "mt-1 text-xs text-muted-foreground"
+    }
+  },
+  "iconography": {
+    "library": "lucide-react",
+    "defaultSize": "h-5 w-5 (nav, buttons) or h-4 w-4 (inline, badges)",
+    "kpiIconSize": "h-4.5 w-4.5 (inside 9x9 container)",
+    "commonIcons": {
+      "dashboard": "LayoutDashboard",
+      "attendance": "CalendarCheck",
+      "employees": "Users",
+      "devices": "Fingerprint",
+      "reports": "FileBarChart",
+      "leaves": "CalendarDays",
+      "holidays": "PartyPopper",
+      "settings": "Settings",
+      "present": "UserCheck",
+      "absent": "UserX",
+      "late": "Clock",
+      "onLeave": "CalendarOff / Plane",
+      "sync": "RefreshCw",
+      "testConnection": "Wifi",
+      "add": "Plus",
+      "edit": "Pencil",
+      "delete": "Trash2",
+      "search": "Search",
+      "export": "Download",
+      "theme": "Moon / Sun",
+      "notifications": "Bell",
+      "menu": "Menu",
+      "close": "X",
+      "success": "CheckCircle2",
+      "error": "XCircle",
+      "warning": "AlertTriangle",
+      "info": "Info"
+    }
+  },
+  "chartStyling": {
+    "library": "recharts",
+    "containerHeight": "280-300px via ResponsiveContainer",
+    "grid": { "stroke": "var(--border)", "strokeDasharray": "3 3" },
+    "axis": {
+      "tickFill": "var(--muted-foreground)",
+      "tickFontSize": 12,
+      "axisLine": false,
+      "tickLine": false
+    },
+    "tooltip": {
+      "background": "var(--popover)",
+      "border": "var(--border)",
+      "text": "var(--popover-foreground)",
+      "borderRadius": "8px",
+      "fontSize": "12px"
+    },
+    "legend": "Horizontal below chart, fontSize 12, muted-foreground",
+    "pieDonut": { "innerRadius": 60, "outerRadius": 90, "paddingAngle": 2 },
+    "barChart": "rounded corners (radius=[4,4,0,0]) with maxBarSize=50",
+    "areaChart": "linear gradient fill from color@opacity-0.3 to transparent",
+    "centeredTotal": "Absolute positioned div overlay in donut center showing total count"
+  },
+  "states": {
+    "loading": {
+      "skeleton": "animate-pulse rounded-lg bg-muted",
+      "spinner": "Loader2 or border-2 border-primary border-t-transparent animate-spin",
+      "kpiSkeleton": "6 placeholder cards matching real layout",
+      "tableSkeleton": "h-16 w-full animate-pulse rounded-lg bg-muted"
+    },
+    "empty": {
+      "container": "flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed py-16 text-center",
+      "icon": "h-14 w-14 rounded-full bg-muted with h-7 w-7 text-muted-foreground icon",
+      "text": "text-sm font-medium (title) + text-sm text-muted-foreground (description)"
+    },
+    "error": {
+      "card": "Card with Activity icon + error message + Retry button",
+      "inline": "text-destructive text-sm"
+    },
+    "interactive": {
+      "missingCheckoutRow": "bg-red-50/50 dark:bg-red-950/20 (subtle red tint)",
+      "activeNav": "bg-primary text-primary-foreground shadow-sm",
+      "hoverRow": "hover:bg-muted/30 transition-colors",
+      "clickedKpi": "ring-2 ring-primary with 'Filtering' indicator"
+    }
+  },
+  "feedback": {
+    "toasts": {
+      "library": "sonner",
+      "position": "top-right",
+      "variants": {
+        "success": "emerald — 'Synced X records', 'Employee created'",
+        "error": "red — 'Failed to sync', 'Connection timed out'",
+        "info": "sky — 'Use Save as PDF in print dialog'",
+        "warning": "amber"
+      },
+      "features": "richColors: true, closeButton: true"
+    },
+    "dialogs": {
+      "confirmation": "AlertDialog with destructive variant for delete actions",
+      "forms": "Dialog with max-w-[520px], labeled fields, Cancel + primary action buttons"
+    }
+  },
+  "printStyles": {
+    "hideClass": "no-print (applied to header actions, tabs, filter controls)",
+    "showClass": "print-only",
+    "background": "white !important on body",
+    "pageBreak": "print-break: page-break-after: always"
+  },
+  "customScrollbar": {
+    "className": "scrollbar-thin",
+    "width": "6px",
+    "track": "transparent",
+    "thumb": "var(--muted-foreground) at 40% opacity, border-radius 3px",
+    "thumbHover": "var(--primary)",
+    "firefox": "scrollbar-width: thin; scrollbar-color: var(--muted-foreground) transparent"
+  },
+  "accessibility": {
+    "focusRing": "outline-ring/50 with ring offset",
+    "touchTargets": "Minimum 44px (h-10 w-10 = 40px acceptable for icon buttons in dense UI)",
+    "srOnly": "sr-only class for screen-reader-only labels",
+    "ariaLabels": "Required on all icon-only buttons (aria-label)",
+    "semanticHtml": "Use main, header, nav, section, footer, aside",
+    "colorContrast": "WCAG AA minimum (4.5:1 for text, 3:1 for large text)"
+  },
+  "doNot": [
+    "Do NOT use indigo or blue as primary color",
+    "Do NOT use hardcoded hex colors in UI classes — use semantic tokens (bg-card, text-foreground) for dark mode compatibility. Hex only for chart definitions.",
+    "Do NOT use fixed pixel heights for footer — use flex min-h-screen flex-col + mt-auto",
+    "Do NOT use absolute port URLs in fetch (http://localhost:3030) — use relative paths only",
+    "Do NOT use server actions — use API routes",
+    "Do NOT create files outside src/ unless required (prisma schema, mini-services)",
+    "Do NOT add emojis to files unless explicitly requested",
+    "Do NOT use max-h-96 without overflow-y-auto and scrollbar-thin for long lists"
+  ],
+  "fileStructure": {
+    "globalStyles": "src/app/globals.css (theme variables + scrollbar + print)",
+    "layout": "src/app/layout.tsx (ThemeProvider + Toaster + fonts)",
+    "page": "src/app/page.tsx (renders AppShell — only user-visible route)",
+    "sharedTypes": "src/lib/types.ts (status configs, formatters, color helpers)",
+    "appComponents": "src/components/app/ (sidebar, header, footer, app-shell, notifications-bell)",
+    "views": "src/components/views/ (one file per module: dashboard-view, attendance-view, etc.)",
+    "uiPrimitives": "src/components/ui/ (shadcn components — pre-existing)"
+  }
+}

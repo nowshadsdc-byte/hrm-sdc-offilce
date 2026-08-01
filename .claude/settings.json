@@ -10,7 +10,18 @@
       "Bash(php -l app/Http/Controllers/LeaveRequestController.php)",
       "Bash(php -l app/Http/Controllers/AttendanceSettingsController.php)",
       "Bash(php -l app/Models/Employee.php)",
-      "Bash(php -l app/Models/AttendanceSettings.php)"
+      "Bash(php -l app/Models/AttendanceSettings.php)",
+      "Bash(xargs -I{} dirname {})",
+      "Bash(npm install *)",
+      "Bash(grep -n '\"@/\\\\*\"\\\\|paths' tsconfig.json)",
+      "Bash(npx eslint *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:8000/)",
+      "Bash(chromium-cli --help)",
+      "Bash(npx --no-install playwright --version)",
+      "Bash(npx --no-install playwright-core --version)",
+      "Bash(curl -s http://127.0.0.1:8000/)"
     ]
   }
 }

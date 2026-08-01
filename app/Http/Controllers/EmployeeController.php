@@ -28,6 +28,10 @@ class EmployeeController extends Controller
                 abort(403);
             }
 
+            if ($request->routeIs('dashboard.myattendances')) {
+                return $next($request);
+            }
+
             if (! $user->hasPrivilege('employees.access') && ! $user->hasAnyRole(['admin', 'super-admin', 'employee'])) {
                 abort(403);
             }
@@ -107,7 +111,7 @@ class EmployeeController extends Controller
 
     public function show(Request $request, Employee $employee, AttendanceSyncService $attendanceSyncService)
     {
-        $employee->load(['user', 'shift']);
+        $employee->load(['user.socialAccounts', 'shift']);
 
         [$start, $end, $month] = $this->resolveAttendanceRange($request);
 
@@ -353,6 +357,68 @@ class EmployeeController extends Controller
         Employee::destroy($employee->getKey());
 
         return redirect()->route('employees.index')->with('success', 'Employee deleted successfully.');
+    }
+
+    public function myAttendances(Request $request, AttendanceSyncService $attendanceSyncService)
+    {
+       
+        $user = $request->user();
+        $employee = $user->employee;
+        if (! $employee) {
+            return view('dashboard.myattendances', [
+                'employee' => null,
+            ]);
+        }
+        $employee->load(['user.socialAccounts', 'shift']);
+        [$start, $end, $month] = $this->resolveAttendanceRange($request);
+        $baseQuery = fn () => Attendance::query()
+            ->where('employee_id', $employee->id)
+            ->whereBetween('date', [$start->toDateString(), $end->toDateString()]);
+
+        if ($baseQuery()->doesntExist() && $employee->device_user_id) {
+            foreach (CarbonPeriod::create($start, $end) as $day) {
+                $attendanceSyncService->syncForDate($day);
+            }
+        }
+
+        $dailyRows = $this->buildDailyPunchRows($employee, $baseQuery(), $start, $end);
+
+        $stats = [
+            'present' => $baseQuery()->whereNotNull('check_in')->count(),
+            'late' => $baseQuery()->where('late_status', true)->count(),
+            'early_leave' => $baseQuery()->where('early_leave_status', true)->count(),
+            'total_hours' => round($baseQuery()->sum('total_work_minutes') / 60, 1),
+            'absent' => $dailyRows->where('status', 'absent')->count(),
+        ];
+
+        $perPage = 31;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+
+        $attendances = new LengthAwarePaginator(
+            $dailyRows->forPage($currentPage, $perPage)->values(),
+            $dailyRows->count(),
+            $perPage,
+            $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        $leaveRequests = $employee->leaveRequests()
+            ->with('approver')
+            ->orderByDesc('start_date')
+            ->get();
+
+        return view('dashboard.myattendances', [
+            'employee' => $employee,
+            'attendances' => $attendances,
+            'stats' => $stats,
+            'startDate' => $start->toDateString(),
+            'endDate' => $end->toDateString(),
+            'month' => $month,
+            'leaveRequests' => $leaveRequests,
+            'leaveBalance' => $employee->leaveBalance(),
+            'leaveTypes' => ['Casual Leave', 'Sick Leave', 'Annual Leave', 'Maternity Leave', 'Paternity Leave'],
+            'isAdmin' => $this->userIsAdmin($request),
+        ]);
     }
 
     protected function validateEmployee(Request $request): array

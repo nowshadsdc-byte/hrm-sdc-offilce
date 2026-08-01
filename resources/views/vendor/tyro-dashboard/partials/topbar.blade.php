@@ -1,3 +1,31 @@
+@php
+    $user = $user ?? new class {
+        public $name = 'User';
+        public $email = '';
+        public $profile_photo_path = null;
+        public $use_gravatar = false;
+        public $profile_photo_url = '';
+        public $roles;
+
+        public function __construct()
+        {
+            $this->roles = new \Illuminate\Support\Collection();
+        }
+
+        public function hasProfilePhotoColumn(): bool
+        {
+            return false;
+        }
+
+        public function hasGravatarColumn(): bool
+        {
+            return false;
+        }
+    };
+    $dashboardRoute = $dashboardRoute ?? new \HasinHayder\TyroDashboard\Support\DashboardRoute();
+    $branding = $branding ?? ['app_name' => config('app.name', 'Laravel')];
+@endphp
+
 <header class="topbar">
     <div class="topbar-left">
         <button type="button" class="mobile-menu-btn" onclick="toggleSidebar()">
