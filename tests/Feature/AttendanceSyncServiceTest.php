@@ -192,3 +192,57 @@ it('does not leak an evening check-out into the next day\'s attendance record', 
 
     expect($day30)->toBeNull();
 });
+
+it('uses the 1st punch as check-in and 2nd punch as check-out regardless of time of day', function () {
+    createAttendanceSyncSchema();
+
+    $shift = Shift::create([
+        'name' => 'Default Shift',
+        'start_time' => '10:30:00',
+        'end_time' => '18:00:00',
+        'is_default' => true,
+    ]);
+
+    $employee = Employee::create([
+        'name' => 'Two Morning Punches Employee',
+        'device_user_id' => 'DU4',
+        'shift_id' => $shift->id,
+    ]);
+
+    // Both punches fall before 13:00 - the old time-window rule would have
+    // left check-out empty. The 1st/2nd punch rule should still pair them.
+    RawDeviceData::create([
+        'deviceUserId' => 'DU4',
+        'employeeName' => 'Two Morning Punches Employee',
+        'date' => '2026-07-30',
+        'time' => '09:05:00',
+        'recordTime' => '2026-07-30 09:05:00',
+        'uniqueKey' => 'DU4|2026-07-30 09:05:00',
+    ]);
+
+    RawDeviceData::create([
+        'deviceUserId' => 'DU4',
+        'employeeName' => 'Two Morning Punches Employee',
+        'date' => '2026-07-30',
+        'time' => '11:30:00',
+        'recordTime' => '2026-07-30 11:30:00',
+        'uniqueKey' => 'DU4|2026-07-30 11:30:00',
+    ]);
+
+    // A 3rd punch later the same day must be ignored for check-in/check-out.
+    RawDeviceData::create([
+        'deviceUserId' => 'DU4',
+        'employeeName' => 'Two Morning Punches Employee',
+        'date' => '2026-07-30',
+        'time' => '17:45:00',
+        'recordTime' => '2026-07-30 17:45:00',
+        'uniqueKey' => 'DU4|2026-07-30 17:45:00',
+    ]);
+
+    app(AttendanceSyncService::class)->syncForDate(Carbon::parse('2026-07-30'));
+
+    $attendance = $employee->attendances()->first();
+
+    expect($attendance->check_in_utc->format('H:i'))->toBe('09:05');
+    expect($attendance->check_out_utc->format('H:i'))->toBe('11:30');
+});

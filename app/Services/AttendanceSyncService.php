@@ -105,10 +105,11 @@ class AttendanceSyncService
             $employee = $employeeByDeviceUserId->get($normalizedDeviceUserId);
             $existingAttendance = $existingByDeviceUserId->get($normalizedDeviceUserId);
 
-            // Punches between 9:00-12:59 count as check-in (earliest wins); punches
-            // between 13:00-23:59 count as check-out (latest wins). No lunch tracking.
-            $checkIn = $orderedPunches->first(fn (Carbon $punch): bool => $punch->hour >= 9 && $punch->hour < 13);
-            $checkOut = $orderedPunches->last(fn (Carbon $punch): bool => $punch->hour >= 13);
+            // 1st punch of the day is check-in, 2nd punch is check-out. Any
+            // further punches that day are ignored for this purpose (no lunch
+            // tracking, no time-of-day windowing).
+            $checkIn = $orderedPunches->get(0);
+            $checkOut = $orderedPunches->get(1);
 
             $lastPunch = $orderedPunches->last();
 
@@ -275,8 +276,8 @@ class AttendanceSyncService
 
     protected function resolvePunchDateTime(RawDeviceData $rawData): Carbon
     {
-        // No timezone conversion: the hour of the raw punch is used as-is to
-        // classify check-in (9-12) vs check-out (13-24).
+        // No timezone conversion: the raw punch timestamp is used as-is so
+        // punches sort chronologically for the 1st-punch/2nd-punch rule above.
         if ($rawData->recordTime !== null) {
             return Carbon::parse($rawData->recordTime, 'UTC');
         }
