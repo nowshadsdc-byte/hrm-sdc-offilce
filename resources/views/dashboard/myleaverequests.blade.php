@@ -1,6 +1,6 @@
 @extends('tyro-dashboard::layouts.user')
 
-@section('title', 'My Leave Requests')
+@section('title', 'docker compose up -d --buildts')
 
 @section('breadcrumb')
 <a href="{{ route($dashboardRoute::name('index')) }}">Dashboard</a>
