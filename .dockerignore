@@ -9,6 +9,11 @@
 node_modules
 vendor
 
+# Locally generated cache — must always be regenerated inside the image
+# (host copies are dev-time artifacts, e.g. they list require-dev providers
+# like Laravel Boost that a --no-dev image build never installs).
+bootstrap/cache/*.php
+
 storage/framework/cache/*
 storage/framework/sessions/*
 storage/framework/testing/*

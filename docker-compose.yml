@@ -1,0 +1,75 @@
+x-app-image: &app-image
+  build:
+    context: .
+    dockerfile: Dockerfile
+    target: runtime
+  image: hrm-sdc:latest
+  restart: unless-stopped
+  env_file: [.env]
+  # Lets DB_HOST=host.docker.internal reach an external MySQL running on the
+  # Docker host itself (already the default on Docker Desktop; required on Linux).
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  volumes:
+    - storage_data:/var/www/html/storage
+  networks: [hrm_net]
+
+services:
+  app:
+    <<: *app-image
+    container_name: hrm_app
+    healthcheck:
+      test: ["CMD", "test", "-f", "/var/www/html/storage/framework/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+  queue:
+    <<: *app-image
+    container_name: hrm_queue
+    user: "www-data:www-data"
+    command: php artisan queue:work --tries=3 --sleep=3 --max-time=3600
+    depends_on:
+      app:
+        condition: service_healthy
+
+  scheduler:
+    <<: *app-image
+    container_name: hrm_scheduler
+    user: "www-data:www-data"
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["while true; do php artisan schedule:run --no-interaction; sleep 60; done"]
+    depends_on:
+      app:
+        condition: service_healthy
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: nginx
+    image: hrm-sdc-nginx:latest
+    container_name: hrm_nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - storage_data:/var/www/html/storage:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/up"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks: [hrm_net]
+
+volumes:
+  storage_data:
+
+networks:
+  hrm_net:
+    driver: bridge
