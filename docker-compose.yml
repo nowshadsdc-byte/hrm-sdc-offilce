@@ -54,7 +54,7 @@ services:
     container_name: hrm_mysql
     restart: unless-stopped
     ports:
-      - "1999:3306"
+      - "1999:"
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
@@ -76,6 +76,13 @@ services:
     image: hrm-node-dev:latest
     container_name: hrm_node
     working_dir: /var/www/html
+    env_file:
+      - .env
+    depends_on:
+      php:
+        condition: service_started
+      mysql:
+        condition: service_healthy
     ports:
       - "1990:1990"
     volumes:
