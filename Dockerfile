@@ -43,7 +43,7 @@ RUN ln -sfn /var/www/html/storage/app/public /var/www/html/public/storage \
     && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/testing storage/framework/views storage/logs \
     && chown -R www-data:www-data storage bootstrap/cache
 
-COPY docker/php.ini /usr/local/etc/php/conf.d/zz-app.ini
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-app.ini
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
@@ -54,5 +54,35 @@ CMD ["php-fpm"]
 # ---------- Stage 4: nginx ----------
 FROM nginx:stable-alpine AS nginx
 
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=runtime /var/www/html/public /var/www/html/public
+
+# ---------- Stage 5: dev (php-fpm over a live-mounted source tree) ----------
+# No app code is copied here — docker-compose bind-mounts the project into
+# /var/www/html so edits and `composer`/`artisan` commands hit real files.
+FROM base AS dev
+
+ARG WWWUSER=1000
+ARG WWWGROUP=1000
+
+# Re-map www-data to the host UID/GID (from .env WWWUSER/WWWGROUP) so files
+# the container writes into the bind-mounted project stay owned by the host user.
+RUN deluser www-data 2>/dev/null || true \
+    && delgroup www-data 2>/dev/null || true \
+    && addgroup -g "${WWWGROUP}" www-data \
+    && adduser -D -G www-data -u "${WWWUSER}" -s /bin/sh www-data
+
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-app.ini
+COPY docker/entrypoint.dev.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+EXPOSE 9000
+ENTRYPOINT ["entrypoint.sh"]
+CMD ["php-fpm"]
+
+# ---------- Stage 6: node-dev (Vite dev server) ----------
+# Needs PHP alongside Node because the Wayfinder Vite plugin shells out to
+# `php artisan wayfinder:generate` on every dev-server start/rebuild.
+FROM base AS node-dev
+
+RUN apk add --no-cache nodejs npm

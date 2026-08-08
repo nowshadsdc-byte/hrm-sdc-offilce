@@ -10,6 +10,8 @@
 /resources/js/wayfinder
 /storage/*.key
 /storage/pail
+/docker/mysql/data/*
+!/docker/mysql/data/.gitkeep
 /vendor
 .env
 .env.backup
