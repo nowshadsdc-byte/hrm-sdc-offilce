@@ -101,13 +101,7 @@ export default function Welcome() {
                                 Status System
                             </a>
                         </nav>
-
-                        <Link
-                            href={login.url()}
-                            className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-all duration-200 hover:bg-primary/90"
-                        >
-                            Log in
-                        </Link>
+                        <a href="/login" className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-all duration-200 hover:bg-primary/90" >Login </a>
                     </div>
                 </header>
 
@@ -129,13 +123,13 @@ export default function Welcome() {
                             </p>
 
                             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                                <Link
-                                    href={login.url()}
+                                <a
+                                    href="/login"
                                     className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-sm font-medium text-primary-foreground transition-all duration-200 hover:bg-primary/90"
                                 >
                                     Get started
                                     <ArrowRight className="h-4 w-4" />
-                                </Link>
+                                </a>
                                 <a
                                     href="#features"
                                     className="inline-flex h-11 items-center justify-center rounded-lg border border-border bg-background px-8 text-sm font-medium transition-all duration-200 hover:bg-accent hover:text-accent-foreground"
@@ -226,13 +220,13 @@ export default function Welcome() {
                                 Log in to your dashboard to review today&apos;s attendance, manage leave requests, and keep every
                                 device in sync.
                             </p>
-                            <Link
-                                href={login.url()}
+                            <a
+                                href='/login'
                                 className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-background px-8 text-sm font-medium text-foreground transition-all duration-200 hover:bg-background/90"
                             >
                                 Log in to AttendPro
                                 <ArrowRight className="h-4 w-4" />
-                            </Link>
+                            </a>
                         </div>
                     </section>
                 </main>
