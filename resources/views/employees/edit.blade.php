@@ -17,12 +17,23 @@
             <h1 class="page-title">Edit Employee</h1>
             <p class="page-description">Update details for {{ $employee->name }}.</p>
         </div>
-        <a href="{{ route('employees.index') }}" class="btn btn-secondary">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Employees
-        </a>
+        <div style="display: flex; gap: 0.75rem;">
+            @if ($canManageDocuments)
+                <a href="{{ route('employees.show', $employee) }}#documents" class="btn btn-secondary" onclick="sessionStorage.setItem('employeeProfileTab', 'documents')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 3v5a1 1 0 0 0 1 1h5" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z" />
+                    </svg>
+                    Documents
+                </a>
+            @endif
+            <a href="{{ route('employees.index') }}" class="btn btn-secondary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Employees
+            </a>
+        </div>
     </div>
 </div>
 

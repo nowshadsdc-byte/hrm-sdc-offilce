@@ -42,38 +42,42 @@
         </div>
     </header>
 
+    <p class="border-b border-slate-100 px-4 py-2 text-xs text-slate-500 lg:hidden">
+        Swipe horizontally to view all attendance columns.
+    </p>
+
     <div class="max-h-140 overflow-auto">
-        <table class="min-w-315 w-full text-sm">
+        <table class="min-w-315 w-full text-sm lg:min-w-full">
             <thead class="sticky top-0 z-10 bg-white">
                 <tr class="border-b border-slate-200 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    <th class="px-4 py-3">Employee</th>
-                    <th class="px-4 py-3">
+                    <th class="px-4 py-3 whitespace-nowrap">Employee</th>
+                    <th class="px-4 py-3 whitespace-nowrap">
                         <button type="button" class="inline-flex items-center gap-1">Check In
                             <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 15l5 5 5-5M7 9l5-5 5 5"/>
                             </svg>
                         </button>
                     </th>
-                    <th class="px-4 py-3">Lunch Start</th>
-                    <th class="px-4 py-3">Lunch End</th>
-                    <th class="px-4 py-3">Lunch</th>
-                    <th class="px-4 py-3">
+                    <th class="px-4 py-3 whitespace-nowrap">Lunch Start</th>
+                    <th class="px-4 py-3 whitespace-nowrap">Lunch End</th>
+                    <th class="px-4 py-3 whitespace-nowrap">Lunch</th>
+                    <th class="px-4 py-3 whitespace-nowrap">
                         <button type="button" class="inline-flex items-center gap-1">Check Out
                             <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 15l5 5 5-5M7 9l5-5 5 5"/>
                             </svg>
                         </button>
                     </th>
-                    <th class="px-4 py-3">
+                    <th class="px-4 py-3 whitespace-nowrap">
                         <button type="button" class="inline-flex items-center gap-1">Hours
                             <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 15l5 5 5-5M7 9l5-5 5 5"/>
                             </svg>
                         </button>
                     </th>
-                    <th class="px-4 py-3">Overtime</th>
-                    <th class="px-4 py-3">Late</th>
-                    <th class="px-4 py-3">Status</th>
+                    <th class="px-4 py-3 whitespace-nowrap">Overtime</th>
+                    <th class="px-4 py-3 whitespace-nowrap">Late</th>
+                    <th class="px-4 py-3 whitespace-nowrap">Status</th>
                     <th class="px-4 py-3">Remarks</th>
                 </tr>
             </thead>
@@ -95,20 +99,22 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-4 text-slate-600">{{ $record['check_in'] }}</td>
-                        <td class="px-4 py-4 text-slate-600">{{ $record['lunch_start'] }}</td>
-                        <td class="px-4 py-4 text-slate-600">{{ $record['lunch_end'] }}</td>
-                        <td class="px-4 py-4 text-slate-600">{{ $record['lunch'] }}</td>
-                        <td class="px-4 py-4 text-slate-600">{{ $record['check_out'] }}</td>
-                        <td class="px-4 py-4 text-slate-700 font-medium">{{ $record['hours'] }}</td>
-                        <td class="px-4 py-4 text-slate-600">{{ $record['overtime'] }}</td>
-                        <td class="px-4 py-4 text-slate-500">{{ $record['late'] }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-slate-600">{{ $record['check_in'] }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-slate-600">{{ $record['lunch_start'] }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-slate-600">{{ $record['lunch_end'] }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-slate-600">{{ $record['lunch'] }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-slate-600">{{ $record['check_out'] }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-slate-700 font-medium">{{ $record['hours'] }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-slate-600">{{ $record['overtime'] }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-slate-500">{{ $record['late'] }}</td>
                         <td class="px-4 py-4">
                             <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold {{ $statusClasses[$record['status']] ?? 'bg-slate-100 text-slate-700' }}">
                                 {{ $record['status'] }}
                             </span>
                         </td>
-                        <td class="px-4 py-4 text-slate-500">{{ $record['remarks'] }}</td>
+                        <td class="px-4 py-4 text-slate-500">
+                            <p class="max-w-64 whitespace-normal wrap-break-word">{{ $record['remarks'] }}</p>
+                        </td>
                     </tr>
                 @empty
                     <tr>

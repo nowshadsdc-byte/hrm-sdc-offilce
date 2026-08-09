@@ -12,7 +12,8 @@
       "Bash(curl -s -o /dev/null -w \"Vite HTTP %{http_code}\\\\n\" http://localhost:1990/@vite/client)",
       "Bash(MSYS_NO_PATHCONV=1 docker compose exec php grep -n \"^listen\" /usr/local/etc/php-fpm.d/www.conf)",
       "Bash(MSYS_NO_PATHCONV=1 docker compose exec php cat /usr/local/etc/php-fpm.d/www.conf)",
-      "Bash(MSYS_NO_PATHCONV=1 docker compose exec php sh -c 'grep -n \"^listen\\\\s*=\" /usr/local/etc/php-fpm.d/*.conf /usr/local/etc/php-fpm.conf 2>/dev/null')"
+      "Bash(MSYS_NO_PATHCONV=1 docker compose exec php sh -c 'grep -n \"^listen\\\\s*=\" /usr/local/etc/php-fpm.d/*.conf /usr/local/etc/php-fpm.conf 2>/dev/null')",
+      "mcp__laravel-boost__search-docs"
     ]
   },
   "enableAllProjectMcpServers": true,

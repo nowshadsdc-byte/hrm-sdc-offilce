@@ -155,6 +155,14 @@ class EmployeeController extends Controller
             ->orderByDesc('start_date')
             ->get();
 
+        $isAdmin = $this->userIsAdmin($request);
+        $user = $request->user();
+        $canManageDocuments = $isAdmin || ($user?->employee && $user->employee->id === $employee->id);
+
+        $documents = $canManageDocuments
+            ? $employee->documents()->with('uploadedBy')->orderByDesc('created_at')->get()
+            : collect();
+
         return view('employees.show', [
             'employee' => $employee,
             'attendances' => $attendances,
@@ -165,7 +173,9 @@ class EmployeeController extends Controller
             'leaveRequests' => $leaveRequests,
             'leaveBalance' => $employee->leaveBalance(),
             'leaveTypes' => ['Casual Leave', 'Sick Leave', 'Annual Leave', 'Maternity Leave', 'Paternity Leave'],
-            'isAdmin' => $this->userIsAdmin($request),
+            'isAdmin' => $isAdmin,
+            'canManageDocuments' => $canManageDocuments,
+            'documents' => $documents,
         ]);
     }
 
@@ -317,11 +327,15 @@ class EmployeeController extends Controller
         $users = User::query()->orderBy('name', 'asc')->get();
         $shifts = Shift::query()->orderBy('start_time')->get();
 
+        $isAdmin = $this->userIsAdmin($request);
+        $user = $request->user();
+
         return view('employees.edit', [
             'employee' => $employee,
             'users' => $users,
             'shifts' => $shifts,
-            'isAdmin' => $this->userIsAdmin($request),
+            'isAdmin' => $isAdmin,
+            'canManageDocuments' => $isAdmin || ($user?->employee && $user->employee->id === $employee->id),
             'defaultAnnualLeaveDays' => AttendanceSettings::current()->default_annual_leave_days ?? 20,
         ]);
     }
@@ -361,7 +375,7 @@ class EmployeeController extends Controller
 
     public function myAttendances(Request $request, AttendanceSyncService $attendanceSyncService)
     {
-       
+
         $user = $request->user();
         $employee = $user->employee;
         if (! $employee) {

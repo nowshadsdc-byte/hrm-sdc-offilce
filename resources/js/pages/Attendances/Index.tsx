@@ -120,16 +120,19 @@ export default function AttendancesIndex({
                 </form>
 
                 <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                    <p className="border-b border-slate-100 px-4 py-2 text-xs text-slate-500 md:hidden">
+                        Swipe horizontally to view all columns.
+                    </p>
                     <div className="overflow-x-auto">
-                        <table className="min-w-full text-sm">
+                        <table className="w-full min-w-190 text-sm">
                             <thead className="bg-slate-50 text-left text-slate-600">
                                 <tr>
-                                    <th className="px-4 py-3">Date</th>
+                                    <th className="whitespace-nowrap px-4 py-3">Date</th>
                                     <th className="px-4 py-3">Employee</th>
-                                    <th className="px-4 py-3">Check In</th>
-                                    <th className="px-4 py-3">Check Out</th>
+                                    <th className="whitespace-nowrap px-4 py-3">Check In</th>
+                                    <th className="whitespace-nowrap px-4 py-3">Check Out</th>
                                     <th className="px-4 py-3">Device</th>
-                                    <th className="px-4 py-3 text-right">Actions</th>
+                                    <th className="whitespace-nowrap px-4 py-3 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -142,10 +145,10 @@ export default function AttendancesIndex({
                                 ) : (
                                     paginated.data.map((attendance) => (
                                         <tr key={attendance.id} className="border-t border-slate-100">
-                                            <td className="px-4 py-3">{attendance.date}</td>
+                                            <td className="whitespace-nowrap px-4 py-3">{attendance.date}</td>
                                             <td className="px-4 py-3">{employeeName(attendance)}</td>
-                                            <td className="px-4 py-3">{attendance.check_in}</td>
-                                            <td className="px-4 py-3">{attendance.check_out ?? 'N/A'}</td>
+                                            <td className="whitespace-nowrap px-4 py-3">{attendance.check_in}</td>
+                                            <td className="whitespace-nowrap px-4 py-3">{attendance.check_out ?? 'N/A'}</td>
                                             <td className="px-4 py-3">{attendance.device?.name ?? 'N/A'}</td>
                                             <td className="px-4 py-3">
                                                 <div className="flex justify-end gap-3">

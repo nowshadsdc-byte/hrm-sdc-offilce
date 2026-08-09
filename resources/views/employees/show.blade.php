@@ -170,6 +170,18 @@
                 <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 1.1rem; height: 1.1rem; padding: 0 0.3rem; border-radius: 999px; background: #f59e0b; color: #fff; font-size: 0.7rem; font-weight: 700;">{{ $leaveRequests->where('status', 'pending')->count() }}</span>
             @endif
         </button>
+        @if ($canManageDocuments)
+            <button type="button" class="btn btn-ghost" data-profile-tab="documents" onclick="switchProfileTab('documents')" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; white-space: nowrap;">
+                <svg viewBox="0 0 24 24" style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M14 3v5a1 1 0 0 0 1 1h5" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                File
+                @if ($documents->count() > 0)
+                    <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 1.1rem; height: 1.1rem; padding: 0 0.3rem; border-radius: 999px; background: #4338ca; color: #fff; font-size: 0.7rem; font-weight: 700;">{{ $documents->count() }}</span>
+                @endif
+            </button>
+        @endif
     </div>
 </div>
 
@@ -478,6 +490,70 @@
     </div>
 </div>{{-- /#profile-tab-leave --}}
 
+@if ($canManageDocuments)
+<div id="profile-tab-documents" style="display: none;">
+    <div class="page-header" style="margin-bottom: 1rem;">
+        <div class="page-header-row">
+            <div>
+                <h2 class="page-title" style="font-size: 1.25rem;">Documents</h2>
+                <p class="page-description" style="font-size: 0.9rem;">Files stored for {{ $employee->name }}.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <button type="button" class="btn btn-primary" onclick="openUploadDocumentModal()" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1rem; height: 1rem;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Upload Document
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="border-radius: 0.75rem; background: #ffffff; border: 1px solid var(--border);">
+        <div class="card-header">
+            <h3 class="card-title">Uploaded Files</h3>
+        </div>
+        <div class="card-body" style="padding-top: 0.75rem;">
+            <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 0.75rem;">
+                <table class="table" style="min-width: 700px; margin: 0;">
+                    <thead style="background: #f8fafc;">
+                        <tr>
+                            <th style="font-weight: 700; color: #0f172a;">Title</th>
+                            <th style="font-weight: 700; color: #0f172a;">File</th>
+                            <th style="font-weight: 700; color: #0f172a;">Uploaded By</th>
+                            <th style="font-weight: 700; color: #0f172a;">Uploaded</th>
+                            <th style="font-weight: 700; color: #0f172a; text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($documents as $document)
+                            <tr>
+                                <td style="font-weight: 600; color: #111827;">{{ $document->title }}</td>
+                                <td style="color: #6b7280; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $document->original_filename }}</td>
+                                <td style="color: #6b7280;">{{ $document->uploadedBy?->name ?? '—' }}</td>
+                                <td style="color: #6b7280; white-space: nowrap;">{{ $document->created_at->format('M j, Y') }}</td>
+                                <td>
+                                    <div style="display: flex; gap: 0.35rem; justify-content: center; flex-wrap: wrap;">
+                                        <a href="{{ route('employees.documents.preview', [$employee, $document]) }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Preview</a>
+                                        <a href="{{ route('employees.documents.download', [$employee, $document]) }}" class="btn btn-secondary btn-sm">Download</a>
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="openEditDocumentModal({{ $document->id }}, {{ \Illuminate\Support\Js::from($document->title) }})">Edit</button>
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="confirmDeleteDocument({{ $employee->id }}, {{ $document->id }})">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #6b7280; padding: 1.5rem;">No documents uploaded yet.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>{{-- /#profile-tab-documents --}}
+@endif
+
 {{-- Apply Leave Modal (scoped to this employee) --}}
 <div id="profileApplyLeaveModal" style="display: none; position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.45); align-items: center; justify-content: center; padding: 1rem;">
     <div style="background: white; border-radius: 1rem; width: 100%; max-width: 32rem; box-shadow: 0 20px 40px rgba(0,0,0,0.2); color: #000;">
@@ -571,6 +647,54 @@
     </div>
 @endif
 
+@if ($canManageDocuments)
+    {{-- Upload Document Modal --}}
+    <div id="uploadDocumentModal" style="display: none; position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.45); align-items: center; justify-content: center; padding: 1rem;">
+        <div style="background: white; border-radius: 1rem; width: 100%; max-width: 32rem; box-shadow: 0 20px 40px rgba(0,0,0,0.2); color: #000;">
+            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);">
+                <h3 style="font-size: 1rem; font-weight: 600; margin: 0;">Upload Document &mdash; {{ $employee->name }}</h3>
+            </div>
+            <form method="POST" action="{{ route('employees.documents.store', $employee) }}" enctype="multipart/form-data" style="padding: 1.25rem 1.5rem 1.5rem;">
+                @csrf
+                <div class="form-group">
+                    <label for="documentTitle" class="form-label">Title</label>
+                    <input type="text" id="documentTitle" name="title" class="form-input" placeholder="e.g. Employment Contract" required>
+                </div>
+                <div class="form-group">
+                    <label for="documentFile" class="form-label">File</label>
+                    <input type="file" id="documentFile" name="file" class="form-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required>
+                    <span style="font-size: 0.75rem; color: #6b7280;">PDF, JPG, PNG, DOC, or DOCX &mdash; max 10MB.</span>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+                    <button type="button" onclick="closeUploadDocumentModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Edit Document Modal --}}
+    <div id="editDocumentModal" style="display: none; position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.45); align-items: center; justify-content: center; padding: 1rem;">
+        <div style="background: white; border-radius: 1rem; width: 100%; max-width: 28rem; box-shadow: 0 20px 40px rgba(0,0,0,0.2); color: #000;">
+            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);">
+                <h3 style="font-size: 1rem; font-weight: 600; margin: 0;">Edit Document Title</h3>
+            </div>
+            <form id="editDocumentForm" method="POST" style="padding: 1.25rem 1.5rem 1.5rem;">
+                @csrf
+                @method('PUT')
+                <div class="form-group">
+                    <label for="editDocumentTitle" class="form-label">Title</label>
+                    <input type="text" id="editDocumentTitle" name="title" class="form-input" required>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <button type="button" onclick="closeEditDocumentModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endif
+
 @push('styles')
 <style>
 .detail-grid {
@@ -618,9 +742,25 @@
         });
     })();
 
+    (function () {
+        var requestedTab = window.location.hash === '#documents' ? 'documents' : sessionStorage.getItem('employeeProfileTab');
+        sessionStorage.removeItem('employeeProfileTab');
+
+        if (requestedTab === 'documents' && document.getElementById('profile-tab-documents')) {
+            switchProfileTab('documents');
+        } else if (requestedTab === 'leave') {
+            switchProfileTab('leave');
+        }
+    })();
+
     function switchProfileTab(tab) {
         document.getElementById('profile-tab-attendance').style.display = tab === 'attendance' ? '' : 'none';
         document.getElementById('profile-tab-leave').style.display = tab === 'leave' ? '' : 'none';
+
+        var documentsTab = document.getElementById('profile-tab-documents');
+        if (documentsTab) {
+            documentsTab.style.display = tab === 'documents' ? '' : 'none';
+        }
 
         document.querySelectorAll('[data-profile-tab]').forEach(function (btn) {
             var active = btn.getAttribute('data-profile-tab') === tab;
@@ -640,6 +780,49 @@
     document.getElementById('profileApplyLeaveModal').addEventListener('click', function (e) {
         if (e.target === this) closeProfileApplyLeaveModal();
     });
+
+    @if ($canManageDocuments)
+        function openUploadDocumentModal() {
+            document.getElementById('uploadDocumentModal').style.display = 'flex';
+        }
+
+        function closeUploadDocumentModal() {
+            document.getElementById('uploadDocumentModal').style.display = 'none';
+        }
+
+        function openEditDocumentModal(documentId, title) {
+            document.getElementById('editDocumentForm').action = '/employees/{{ $employee->id }}/documents/' + documentId;
+            document.getElementById('editDocumentTitle').value = title;
+            document.getElementById('editDocumentModal').style.display = 'flex';
+        }
+
+        function closeEditDocumentModal() {
+            document.getElementById('editDocumentModal').style.display = 'none';
+        }
+
+        function confirmDeleteDocument(employeeId, documentId) {
+            var proceed = window.confirm('Delete this document? This action cannot be undone.');
+
+            if (!proceed) {
+                return;
+            }
+
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/employees/' + employeeId + '/documents/' + documentId;
+            form.innerHTML = '<input type="hidden" name="_token" value="{{ csrf_token() }}"><input type="hidden" name="_method" value="DELETE">';
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        document.getElementById('uploadDocumentModal').addEventListener('click', function (e) {
+            if (e.target === this) closeUploadDocumentModal();
+        });
+
+        document.getElementById('editDocumentModal').addEventListener('click', function (e) {
+            if (e.target === this) closeEditDocumentModal();
+        });
+    @endif
 
     @if ($isAdmin)
         function openProfileApproveModal(leaveRequestId) {
