@@ -115,6 +115,14 @@ class EmployeeController extends Controller
 
         [$start, $end, $month] = $this->resolveAttendanceRange($request);
 
+        if ($employee->job_join_date) {
+            $joinDate = Carbon::parse($employee->job_join_date->toDateString())->startOfDay();
+
+            if ($joinDate->gt($start)) {
+                $start = $joinDate;
+            }
+        }
+
         $baseQuery = fn () => Attendance::query()
             ->where('employee_id', $employee->id)
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()]);
@@ -265,14 +273,6 @@ class EmployeeController extends Controller
         $today = Carbon::now()->startOfDay();
         if ($rangeEnd->gt($today)) {
             $rangeEnd = $today->copy();
-        }
-
-        if ($employee->job_join_date) {
-            $joinDate = Carbon::parse($employee->job_join_date->toDateString());
-
-            if ($joinDate->gt($rangeStart)) {
-                $rangeStart = $joinDate;
-            }
         }
 
         if ($rangeStart->gt($rangeEnd)) {

@@ -1164,16 +1164,16 @@
         },
         {
             "name": "hasinhayder/tyro",
-            "version": "v1.10.1",
+            "version": "v1.12.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hasinhayder/tyro.git",
-                "reference": "3c62d5ebe088e2434b08c9ea9aa6835abce09962"
+                "reference": "92e637f32e507a7e92720bac56c2e10447f7be27"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hasinhayder/tyro/zipball/3c62d5ebe088e2434b08c9ea9aa6835abce09962",
-                "reference": "3c62d5ebe088e2434b08c9ea9aa6835abce09962",
+                "url": "https://api.github.com/repos/hasinhayder/tyro/zipball/92e637f32e507a7e92720bac56c2e10447f7be27",
+                "reference": "92e637f32e507a7e92720bac56c2e10447f7be27",
                 "shasum": ""
             },
             "require": {
@@ -1215,7 +1215,7 @@
             "license": [
                 "MIT"
             ],
-            "description": "Tyro - The ultimate Authentication, Authorization, and Role & Privilege Management solution for Laravel 12 & 13",
+            "description": "Tyro is a complete Authentication, Authorization, and Role & Privilege (RBAC/ACL) management solution for Laravel 12 & 13, built on Laravel Sanctum.",
             "keywords": [
                 "Authentication",
                 "acl",
@@ -1230,9 +1230,9 @@
             ],
             "support": {
                 "issues": "https://github.com/hasinhayder/tyro/issues",
-                "source": "https://github.com/hasinhayder/tyro/tree/v1.10.1"
+                "source": "https://github.com/hasinhayder/tyro/tree/v1.12.0"
             },
-            "time": "2026-06-18T16:04:33+00:00"
+            "time": "2026-08-10T16:56:25+00:00"
         },
         {
             "name": "hasinhayder/tyro-dashboard",
