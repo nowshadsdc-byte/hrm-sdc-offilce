@@ -10,7 +10,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
-        "hasinhayder/tyro-dashboard": "^1.45",
+        "hasinhayder/tyro-dashboard": "^1.46",
         "hasinhayder/tyro-login": "^2.12",
         "inertiajs/inertia-laravel": "^3.0",
         "laravel/framework": "^13.7",
