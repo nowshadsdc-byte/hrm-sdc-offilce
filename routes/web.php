@@ -6,6 +6,7 @@ use App\Http\Controllers\AttendancesController;
 use App\Http\Controllers\AttendanceSettingsController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\EmployeeDocumentController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\SyncTodayController;
@@ -14,11 +15,19 @@ use Illuminate\Support\Facades\Route;
 Route::inertia('/', 'welcome')->name('home');
 
 Route::get('/test', function () {
-    return "reademployees";
-})->middleware(['auth','readonly.action']);
+    return 'reademployees';
+})->middleware(['auth', 'readonly.action']);
 
 Route::resource('employees', EmployeeController::class);
 Route::post('/employees/{employee}/sync-attendance', [EmployeeController::class, 'syncAttendance'])->name('employees.sync-attendance');
+
+Route::prefix('employees/{employee}/documents')->middleware(['auth'])->group(function () {
+    Route::post('/', [EmployeeDocumentController::class, 'store'])->name('employees.documents.store');
+    Route::put('/{document}', [EmployeeDocumentController::class, 'update'])->name('employees.documents.update');
+    Route::delete('/{document}', [EmployeeDocumentController::class, 'destroy'])->name('employees.documents.destroy');
+    Route::get('/{document}/preview', [EmployeeDocumentController::class, 'preview'])->name('employees.documents.preview');
+    Route::get('/{document}/download', [EmployeeDocumentController::class, 'download'])->name('employees.documents.download');
+});
 
 Route::prefix('attendance-settings')->middleware(['auth', 'attendance-settings.access'])->group(function () {
     Route::get('/', [AttendanceSettingsController::class, 'index'])->name('attendance-settings.index');

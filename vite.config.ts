@@ -28,4 +28,17 @@ export default defineConfig({
             formVariants: true,
         }),
     ],
+    server: {
+        host: '0.0.0.0',
+        port: 1990,
+        strictPort: true,
+        hmr: {
+            host: 'localhost',
+        },
+        watch: {
+            // Bind-mounted source under Docker Desktop doesn't always deliver
+            // inotify events reliably, so fall back to polling.
+            usePolling: true,
+        },
+    },
 });

@@ -176,6 +176,40 @@ it('filters an employee\'s attendance by a custom date range', function () {
     expect($data['stats']['late'])->toBe(1);
 });
 
+it('excludes attendance before the employee join date from history statistics', function () {
+    createEmployeeShowSchema();
+
+    $employee = Employee::create([
+        'name' => 'Mid-Month Join Employee',
+        'device_user_id' => 'DU6',
+        'job_join_date' => '2026-07-15',
+    ]);
+
+    $employee->attendances()->create([
+        'date' => '2026-07-10',
+        'check_in' => '2026-07-10 10:00:00',
+        'total_work_minutes' => 480,
+    ]);
+
+    $employee->attendances()->create([
+        'date' => '2026-07-20',
+        'check_in' => '2026-07-20 10:00:00',
+        'total_work_minutes' => 480,
+    ]);
+
+    $controller = app(EmployeeController::class);
+    $request = Request::create('/employees/'.$employee->id, 'GET', ['month' => '2026-07']);
+
+    $response = $controller->show($request, $employee, app(AttendanceSyncService::class));
+    $data = $response->getData();
+    $preJoinAttendanceId = $employee->attendances()->whereDate('date', '2026-07-10')->value('id');
+
+    expect($data['startDate'])->toBe('2026-07-15');
+    expect($data['stats']['present'])->toBe(1);
+    expect($data['stats']['total_hours'])->toBe(8.0);
+    expect($data['attendances']->getCollection()->pluck('attendance.id'))->not->toContain($preJoinAttendanceId);
+});
+
 it('builds attendance rows from already-pulled raw device data when none exist yet', function () {
     createEmployeeShowSchema();
 

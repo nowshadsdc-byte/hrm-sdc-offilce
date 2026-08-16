@@ -26,6 +26,11 @@ class Employee extends Model
         return $this->hasMany(LeaveRequest::class);
     }
 
+    public function documents()
+    {
+        return $this->hasMany(EmployeeDocument::class);
+    }
+
     /**
      * Leave balance for a given year (defaults to the current year): the
      * total allocation (this employee's override, or the org-wide default),

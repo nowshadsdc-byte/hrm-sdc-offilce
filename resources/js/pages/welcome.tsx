@@ -129,6 +129,7 @@ export default function Welcome() {
                             </p>
 
                             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                               
                                 <a
                                     href="/login"
                                     className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-sm font-medium text-primary-foreground transition-all duration-200 hover:bg-primary/90"
@@ -136,6 +137,7 @@ export default function Welcome() {
                                     Get started
                                     <ArrowRight className="h-4 w-4" />
                                 </a>
+                            
                                 <a
                                     href="#features"
                                     className="inline-flex h-11 items-center justify-center rounded-lg border border-border bg-background px-8 text-sm font-medium transition-all duration-200 hover:bg-accent hover:text-accent-foreground"
@@ -228,11 +230,12 @@ export default function Welcome() {
                             </p>
                             <a
                                 href='/login'
-                                className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-background px-8 text-sm font-medium text-foreground transition-all duration-200 hover:bg-background/90"
+                                className="mt-8 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-sm font-medium text-primary-foreground transition-all duration-200 hover:bg-primary/90"
                             >
                                 Log in to AttendPro
                                 <ArrowRight className="h-4 w-4" />
                             </a>
+                        
                         </div>
                     </section>
                 </main>

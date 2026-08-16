@@ -1164,16 +1164,16 @@
         },
         {
             "name": "hasinhayder/tyro",
-            "version": "v1.10.1",
+            "version": "v1.12.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hasinhayder/tyro.git",
-                "reference": "3c62d5ebe088e2434b08c9ea9aa6835abce09962"
+                "reference": "92e637f32e507a7e92720bac56c2e10447f7be27"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hasinhayder/tyro/zipball/3c62d5ebe088e2434b08c9ea9aa6835abce09962",
-                "reference": "3c62d5ebe088e2434b08c9ea9aa6835abce09962",
+                "url": "https://api.github.com/repos/hasinhayder/tyro/zipball/92e637f32e507a7e92720bac56c2e10447f7be27",
+                "reference": "92e637f32e507a7e92720bac56c2e10447f7be27",
                 "shasum": ""
             },
             "require": {
@@ -1215,7 +1215,7 @@
             "license": [
                 "MIT"
             ],
-            "description": "Tyro - The ultimate Authentication, Authorization, and Role & Privilege Management solution for Laravel 12 & 13",
+            "description": "Tyro is a complete Authentication, Authorization, and Role & Privilege (RBAC/ACL) management solution for Laravel 12 & 13, built on Laravel Sanctum.",
             "keywords": [
                 "Authentication",
                 "acl",
@@ -1230,9 +1230,9 @@
             ],
             "support": {
                 "issues": "https://github.com/hasinhayder/tyro/issues",
-                "source": "https://github.com/hasinhayder/tyro/tree/v1.10.1"
+                "source": "https://github.com/hasinhayder/tyro/tree/v1.12.0"
             },
-            "time": "2026-06-18T16:04:33+00:00"
+            "time": "2026-08-10T16:56:25+00:00"
         },
         {
             "name": "hasinhayder/tyro-dashboard",
@@ -7611,16 +7611,16 @@
         },
         {
             "name": "laravel/boost",
-            "version": "v2.4.10",
+            "version": "v2.4.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/boost.git",
-                "reference": "080189f51c8d27c0792a03483a70adc7770f6eeb"
+                "reference": "f55e08f5afa89ac72f23f574175005b67878f466"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/boost/zipball/080189f51c8d27c0792a03483a70adc7770f6eeb",
-                "reference": "080189f51c8d27c0792a03483a70adc7770f6eeb",
+                "url": "https://api.github.com/repos/laravel/boost/zipball/f55e08f5afa89ac72f23f574175005b67878f466",
+                "reference": "f55e08f5afa89ac72f23f574175005b67878f466",
                 "shasum": ""
             },
             "require": {
@@ -7629,7 +7629,7 @@
                 "illuminate/contracts": "^11.45.3|^12.41.1|^13.0",
                 "illuminate/routing": "^11.45.3|^12.41.1|^13.0",
                 "illuminate/support": "^11.45.3|^12.41.1|^13.0",
-                "laravel/mcp": "^0.7.1|^0.8.0",
+                "laravel/mcp": "^0.7.1|^0.8.0|^0.9.0",
                 "laravel/prompts": "^0.3.10",
                 "laravel/roster": "^0.5.0",
                 "php": "^8.2"
@@ -7673,7 +7673,7 @@
                 "issues": "https://github.com/laravel/boost/issues",
                 "source": "https://github.com/laravel/boost"
             },
-            "time": "2026-06-09T10:21:08+00:00"
+            "time": "2026-07-17T14:28:57+00:00"
         },
         {
             "name": "laravel/mcp",
