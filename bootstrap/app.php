@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureAttendanceSettingsAccess;
 use App\Http\Middleware\EnsureHolidayCalendarAccess;
 use App\Http\Middleware\EnsureReadonlyActionAccess;
+use App\Http\Middleware\EnsureUsersManageAccess;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -23,15 +24,19 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        $middleware->preventRequestForgery(except: [
+            'webhook/api',
+        ]);
+
         $middleware->alias([
             'attendance-settings.access' => EnsureAttendanceSettingsAccess::class,
             'holiday-calendar.access' => EnsureHolidayCalendarAccess::class,
             'readonly.action' => EnsureReadonlyActionAccess::class,
-            'users.manage' => \App\Http\Middleware\EnsureUsersManageAccess::class,
+            'users.manage' => EnsureUsersManageAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*'),
+            fn (Request $request) => $request->is('api/*') || $request->is('webhook/*'),
         );
     })->create();

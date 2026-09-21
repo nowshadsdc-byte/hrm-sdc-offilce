@@ -9,7 +9,9 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeDocumentController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\LeaveRequestController;
+use App\Http\Controllers\OpenWAWebhookController;
 use App\Http\Controllers\SyncTodayController;
+use App\Models\Employee;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -17,6 +19,8 @@ Route::inertia('/', 'welcome')->name('home');
 Route::get('/test', function () {
     return 'reademployees';
 })->middleware(['auth', 'readonly.action']);
+
+Route::post('/webhook/api', OpenWAWebhookController::class)->name('webhook.openwa');
 
 Route::resource('employees', EmployeeController::class);
 Route::post('/employees/{employee}/sync-attendance', [EmployeeController::class, 'syncAttendance'])->name('employees.sync-attendance');
@@ -95,3 +99,16 @@ Route::get('dashboard/myleaverequests', [LeaveRequestController::class, 'myReque
 Route::post('dashboard/myleaverequests', [LeaveRequestController::class, 'storeForSelf'])
     ->middleware(['auth'])
     ->name('dashboard.myleaverequests.store');
+
+Route::get('dashboard/convertion/chat-profile/{chatId}', function (string $chatId) {
+    $deviceUserId = strstr($chatId, '@', true) ?: $chatId;
+    $employee = Employee::query()
+        ->whereIn('device_user_id', array_values(array_unique([$chatId, $deviceUserId])), 'and', false)
+        ->first();
+
+    return response()->json([
+        'url' => $employee ? route('employees.show', $employee) : null,
+    ]);
+})->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.convertion.chat-profile');
+
+Route::view('dashboard/convertion', 'dashboard.convertion')->middleware(['auth', 'tyro-dashboard.admin'])->name('dashboard.convertion');

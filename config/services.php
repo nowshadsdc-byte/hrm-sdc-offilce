@@ -39,4 +39,11 @@ return [
         'url' => env('DEVICE_GATEWAY_URL', 'http://localhost:4370'),
     ],
 
+    'openwa' => [
+        'base_url' => env('OPENWA_BASE_URL'),
+        'api_key' => env('OPENWA_API_KEY'),
+        'session_id' => env('OPENWA_SESSION_ID'),
+        'webhook_secret' => env('OPENWA_WEBHOOK_SECRET'),
+    ],
+
 ];
